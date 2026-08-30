@@ -1,0 +1,11 @@
+@config "../../../tailwind.config.ts";
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+}

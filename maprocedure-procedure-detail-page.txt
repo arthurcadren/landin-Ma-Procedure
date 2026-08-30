@@ -1,0 +1,826 @@
+// ============================================================
+// FICHIER: app/Http/Controllers/Api/ProcedureController.php (Laravel)
+// MODIFICATION de la méthode show() uniquement — aucun changement de schéma,
+// juste la logique de recherche (slug d'abord, id en repli pour compatibilité
+// avec l'app mobile qui utilise déjà des IDs numériques).
+// ============================================================
+
+/*
+public function show($id)
+{
+    $procedure = Procedure::with(['category', 'steps', 'documents'])
+        ->where('slug', $id)
+        ->orWhere('id', is_numeric($id) ? $id : 0)
+        ->firstOrFail();
+
+    return response()->json([
+        'id' => $procedure->id,
+        'slug' => $procedure->slug,
+        'title' => $procedure->title,
+        'summary' => $procedure->summary,
+        'description' => $procedure->overview,
+        'price' => $procedure->price,
+        'category' => $procedure->category,
+        'popularity_score' => $procedure->popularity_score,
+        'image' => $procedure->image ?? $procedure->meta['image'] ?? null,
+        'estimated_cost' => $procedure->meta['estimated_cost'] ?? null,
+        'estimated_delay' => $procedure->meta['estimated_delay'] ?? null,
+        'administration' => $procedure->meta['administration'] ?? null,
+        'faq' => $procedure->meta['faq'] ?? [],
+        'steps' => $procedure->steps,
+        'documents' => $procedure->documents,
+    ]);
+}
+
+// Ajoute aussi cette méthode pour lister tous les slugs (utile pour generateStaticParams
+// côté Next.js — évite de charger toutes les procédures complètes juste pour les slugs) :
+
+public function slugs()
+{
+    return response()->json(
+        Procedure::where('is_published', true)->pluck('slug')
+    );
+}
+
+// Et dans routes/api.php, ajoute AVANT la route existante /procedures/{id} :
+// Route::get('/procedures/slugs', [ProcedureController::class, 'slugs']);
+*/
+
+
+// ============================================================
+// FICHIER: lib/api.ts — AJOUTS (garde le contenu existant, ajoute ceci)
+// ============================================================
+
+/*
+export interface ProcedureStep {
+  id: number;
+  title: string;
+  description: string | null;
+  position: number;
+  is_optional: boolean;
+}
+
+export interface ProcedureDocument {
+  id: number;
+  name: string;
+  description: string | null;
+  is_mandatory: boolean;
+}
+
+export interface ProcedureDetail extends ProcedureSummary {
+  overview?: string;
+  price?: number | null;
+  estimated_cost?: string | null;
+  estimated_delay?: string | null;
+  administration?: string | null;
+  faq?: { question: string; answer: string }[];
+  steps: ProcedureStep[];
+  documents: ProcedureDocument[];
+}
+
+export async function getProcedureBySlug(slug: string): Promise<ProcedureDetail | null> {
+  try {
+    const res = await fetch(`${API_URL}/procedures/${slug}`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    return (await res.json()) as ProcedureDetail;
+  } catch {
+    return null;
+  }
+}
+
+export async function getAllProcedureSlugs(): Promise<string[]> {
+  return safeFetch<string[]>(`${API_URL}/procedures/slugs`, []);
+}
+
+export async function getAllProcedures(params?: {
+  search?: string;
+  category_id?: number;
+}): Promise<ProcedureSummary[]> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.category_id) query.set("category_id", String(params.category_id));
+
+  return safeFetch<ProcedureSummary[]>(`${API_URL}/procedures?${query}`, []);
+}
+
+export async function getRelatedProcedures(categoryId: number, excludeSlug: string): Promise<ProcedureSummary[]> {
+  const all = await getAllProcedures({ category_id: categoryId });
+  return all.filter((p) => p.slug !== excludeSlug).slice(0, 3);
+}
+*/
+
+
+// ============================================================
+// FICHIER: messages/fr.json — AJOUTS (garde le contenu existant, ajoute ces clés)
+// ============================================================
+
+/*
+{
+  "procedureDetail": {
+    "breadcrumbHome": "Accueil",
+    "minRead": "min de lecture",
+    "popular": "Très populaire",
+    "estimatedCost": "Coût estimé",
+    "estimatedDelay": "Délai moyen",
+    "administration": "Administration",
+    "documentsRequired": "Documents requis",
+    "stepsTitle": "Étapes de la procédure",
+    "documentsTitle": "Documents à fournir",
+    "mandatory": "Obligatoire",
+    "optional": "Optionnel",
+    "faqTitle": "Questions Fréquentes",
+    "helpTitle": "Besoin d'aide pour cette procédure ?",
+    "helpSubtitle": "Nos experts vous répondent et vous accompagnent dans vos démarches administratives.",
+    "helpCta": "Question gratuite sur WhatsApp",
+    "helpCtaSecondary": "Accompagnement expert personnalisé",
+    "relatedTitle": "Procédures similaires",
+    "notFoundTitle": "Procédure introuvable",
+    "notFoundText": "Cette démarche n'existe pas ou plus dans notre base.",
+    "backToList": "Voir toutes les procédures"
+  },
+  "proceduresList": {
+    "title": "Toutes les procédures administratives",
+    "subtitle": "Trouvez rapidement le guide dont vous avez besoin",
+    "searchPlaceholder": "Rechercher une procédure : CNI, passeport, casier...",
+    "allCategories": "Toutes",
+    "resultsCount": "{count} procédure(s) trouvée(s)",
+    "noResults": "Aucune procédure ne correspond à votre recherche",
+    "noResultsCta": "Demander à notre assistant",
+    "sortPopular": "Plus populaires",
+    "sortAz": "A-Z"
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: messages/en.json — AJOUTS
+// ============================================================
+
+/*
+{
+  "procedureDetail": {
+    "breadcrumbHome": "Home",
+    "minRead": "min read",
+    "popular": "Very popular",
+    "estimatedCost": "Estimated cost",
+    "estimatedDelay": "Average delay",
+    "administration": "Administration",
+    "documentsRequired": "Documents required",
+    "stepsTitle": "Steps to follow",
+    "documentsTitle": "Documents to provide",
+    "mandatory": "Mandatory",
+    "optional": "Optional",
+    "faqTitle": "Frequently Asked Questions",
+    "helpTitle": "Need help with this procedure?",
+    "helpSubtitle": "Our experts answer your questions and guide you through your administrative procedures.",
+    "helpCta": "Free question on WhatsApp",
+    "helpCtaSecondary": "Personalized expert support",
+    "relatedTitle": "Similar procedures",
+    "notFoundTitle": "Procedure not found",
+    "notFoundText": "This procedure doesn't exist or is no longer in our database.",
+    "backToList": "See all procedures"
+  },
+  "proceduresList": {
+    "title": "All administrative procedures",
+    "subtitle": "Quickly find the guide you need",
+    "searchPlaceholder": "Search a procedure: ID card, passport, criminal record...",
+    "allCategories": "All",
+    "resultsCount": "{count} procedure(s) found",
+    "noResults": "No procedure matches your search",
+    "noResultsCta": "Ask our assistant",
+    "sortPopular": "Most popular",
+    "sortAz": "A-Z"
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: components/seo/HowToJsonLd.tsx
+// Schema.org HowTo — très recherché par Google pour les guides étape par
+// étape, génère souvent des rich snippets directement dans les résultats
+// de recherche (grosse valeur SEO pour ce type de contenu).
+// ============================================================
+
+import type { ProcedureDetail } from "@/lib/api";
+
+export function HowToJsonLd({ procedure, url }: { procedure: ProcedureDetail; url: string }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: procedure.title,
+    description: procedure.summary ?? procedure.overview ?? "",
+    totalTime: procedure.estimated_delay ?? undefined,
+    estimatedCost: procedure.estimated_cost
+      ? { "@type": "MonetaryAmount", currency: "XAF", value: procedure.estimated_cost }
+      : undefined,
+    step: procedure.steps.map((step) => ({
+      "@type": "HowToStep",
+      position: step.position,
+      name: step.title,
+      text: step.description ?? step.title,
+    })),
+    supply: procedure.documents.map((doc) => ({
+      "@type": "HowToSupply",
+      name: doc.name,
+    })),
+    url,
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+export function FaqJsonLd({ faq }: { faq: { question: string; answer: string }[] }) {
+  if (!faq || faq.length === 0) return null;
+
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+export function BreadcrumbJsonLd({ items }: { items: { name: string; url: string }[] }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/procedures/Breadcrumb.tsx
+// ============================================================
+
+import { Link } from "@/i18n/navigation";
+import { ChevronRight } from "lucide-react";
+
+export function Breadcrumb({ items }: { items: { name: string; href?: string }[] }) {
+  return (
+    <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-on-surface-variant mb-6 flex-wrap">
+      {items.map((item, i) => (
+        <span key={item.name} className="flex items-center gap-2">
+          {i > 0 && <ChevronRight size={14} />}
+          {item.href ? (
+            <Link href={item.href} className="hover:text-primary transition-colors">
+              {item.name}
+            </Link>
+          ) : (
+            <span className="text-on-surface font-medium">{item.name}</span>
+          )}
+        </span>
+      ))}
+    </nav>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/procedures/ProcedureCard.tsx
+// Réutilisé par la liste ET par "procédures similaires"
+// ============================================================
+
+import { Link } from "@/i18n/navigation";
+import { FileText, ChevronRight, Flame } from "lucide-react";
+import type { ProcedureSummary } from "@/lib/api";
+
+export function ProcedureCard({ procedure }: { procedure: ProcedureSummary }) {
+  return (
+    <Link
+      href={`/procedures/${procedure.slug}`}
+      className="group flex items-center gap-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:shadow-card hover:border-primary/40 transition-all"
+    >
+      <div className="w-12 h-12 rounded-lg bg-primary-container/15 flex items-center justify-center flex-shrink-0">
+        <FileText size={22} className="text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-on-surface truncate">{procedure.title}</p>
+        {procedure.summary && (
+          <p className="text-sm text-on-surface-variant truncate">{procedure.summary}</p>
+        )}
+        {!!procedure.popularity_score && (
+          <div className="flex items-center gap-1 mt-1">
+            <Flame size={12} className="text-tertiary" />
+            <span className="text-xs text-on-surface-variant">{procedure.popularity_score} demandes</span>
+          </div>
+        )}
+      </div>
+      <ChevronRight size={20} className="text-outline group-hover:text-primary transition-colors flex-shrink-0" />
+    </Link>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/procedures/[slug]/page.tsx
+// LA PAGE LA PLUS IMPORTANTE POUR LE SEO — une URL indexable par
+// démarche, avec métadonnées uniques, HowTo + FAQ + Breadcrumb JSON-LD.
+// ============================================================
+
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import {
+  getProcedureBySlug,
+  getAllProcedureSlugs,
+  getRelatedProcedures,
+} from "@/lib/api";
+import { HowToJsonLd, FaqJsonLd, BreadcrumbJsonLd } from "@/components/seo/HowToJsonLd";
+import { Breadcrumb } from "@/components/procedures/Breadcrumb";
+import { ProcedureCard } from "@/components/procedures/ProcedureCard";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import { Wallet, Clock, Landmark, FileStack, Clock3 } from "lucide-react";
+
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const slugs = await getAllProcedureSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const procedure = await getProcedureBySlug(slug);
+
+  if (!procedure) {
+    return { title: "Procédure introuvable" };
+  }
+
+  const baseUrl = "https://maprocedure.cm";
+  const title =
+    locale === "en"
+      ? `${procedure.title} in Cameroon — Steps & Requirements`
+      : `${procedure.title} au Cameroun — Étapes et documents requis`;
+  const description =
+    procedure.summary ??
+    `Guide complet : ${procedure.title.toLowerCase()} au Cameroun, étapes, documents requis, coûts et délais.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${baseUrl}/${locale}/procedures/${slug}`,
+      languages: {
+        fr: `${baseUrl}/fr/procedures/${slug}`,
+        en: `${baseUrl}/en/procedures/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/${locale}/procedures/${slug}`,
+      type: "article",
+    },
+  };
+}
+
+export default async function ProcedureDetailPage({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}) {
+  const { locale, slug } = await params;
+  const procedure = await getProcedureBySlug(slug);
+
+  if (!procedure) {
+    notFound();
+  }
+
+  const t = await getTranslations("procedureDetail");
+  const baseUrl = "https://maprocedure.cm";
+  const pageUrl = `${baseUrl}/${locale}/procedures/${slug}`;
+
+  const related = procedure.category
+    ? await getRelatedProcedures(procedure.category.id, slug)
+    : [];
+
+  const breadcrumbItems = [
+    { name: t("breadcrumbHome"), href: "/" },
+    ...(procedure.category ? [{ name: procedure.category.name, href: "/procedures" }] : []),
+    { name: procedure.title },
+  ];
+
+  const breadcrumbJsonLdItems = [
+    { name: t("breadcrumbHome"), url: `${baseUrl}/${locale}` },
+    ...(procedure.category
+      ? [{ name: procedure.category.name, url: `${baseUrl}/${locale}/procedures` }]
+      : []),
+    { name: procedure.title, url: pageUrl },
+  ];
+
+  return (
+    <>
+      <HowToJsonLd procedure={procedure} url={pageUrl} />
+      <FaqJsonLd faq={procedure.faq ?? []} />
+      <BreadcrumbJsonLd items={breadcrumbJsonLdItems} />
+
+      <Header />
+
+      <main className="max-w-3xl mx-auto px-4 md:px-8 py-10">
+        <Breadcrumb items={breadcrumbItems} />
+
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          {procedure.category && (
+            <span className="bg-secondary-container text-on-secondary-container text-xs font-semibold px-3 py-1 rounded-full">
+              {procedure.category.name}
+            </span>
+          )}
+          {!!procedure.popularity_score && procedure.popularity_score > 50 && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+              🔥 {t("popular")}
+            </span>
+          )}
+        </div>
+
+        <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-6 text-balance">
+          {procedure.title}
+        </h1>
+
+        {procedure.summary && (
+          <div className="bg-surface-container-low rounded-xl p-5 mb-8">
+            <p className="text-on-surface-variant leading-relaxed">{procedure.summary}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+          <InfoCard icon={Wallet} label={t("estimatedCost")} value={procedure.estimated_cost ?? "—"} />
+          <InfoCard icon={Clock} label={t("estimatedDelay")} value={procedure.estimated_delay ?? "—"} />
+          <InfoCard icon={Landmark} label={t("administration")} value={procedure.administration ?? "—"} />
+          <InfoCard icon={FileStack} label={t("documentsRequired")} value={String(procedure.documents.length)} />
+        </div>
+
+        {procedure.steps.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-on-surface mb-4">{t("stepsTitle")}</h2>
+            <ol className="space-y-3">
+              {procedure.steps
+                .sort((a, b) => a.position - b.position)
+                .map((step, i) => (
+                  <li
+                    key={step.id}
+                    className="flex gap-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-5"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-primary text-on-primary font-bold flex items-center justify-center flex-shrink-0 text-sm">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-on-surface mb-1">{step.title}</h3>
+                      {step.description && (
+                        <p className="text-sm text-on-surface-variant leading-relaxed">{step.description}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+            </ol>
+          </section>
+        )}
+
+        {procedure.documents.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-on-surface mb-4">{t("documentsTitle")}</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {procedure.documents.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-semibold text-on-surface text-sm">{doc.name}</p>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                        doc.is_mandatory
+                          ? "bg-error-container text-error"
+                          : "bg-surface-container-high text-on-surface-variant"
+                      }`}
+                    >
+                      {doc.is_mandatory ? t("mandatory") : t("optional")}
+                    </span>
+                  </div>
+                  {doc.description && (
+                    <p className="text-xs text-on-surface-variant">{doc.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {procedure.faq && procedure.faq.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold text-on-surface mb-4">{t("faqTitle")}</h2>
+            <div className="space-y-2">
+              {procedure.faq.map((item) => (
+                <details
+                  key={item.question}
+                  className="group bg-surface-container-lowest border border-outline-variant rounded-xl p-4"
+                >
+                  <summary className="font-medium text-on-surface cursor-pointer list-none flex items-center justify-between">
+                    {item.question}
+                    <span className="text-primary group-open:rotate-45 transition-transform">+</span>
+                  </summary>
+                  <p className="text-sm text-on-surface-variant mt-3 leading-relaxed">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="bg-primary text-on-primary rounded-2xl p-6 md:p-8 mb-10">
+          <h2 className="text-xl font-bold mb-2">{t("helpTitle")}</h2>
+          <p className="opacity-90 mb-5 text-sm leading-relaxed">{t("helpSubtitle")}</p>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-on-primary text-primary font-semibold px-5 py-3 rounded-lg hover:opacity-90 transition-opacity mb-2"
+          >
+            {t("helpCta")}
+          </a>
+          <p className="text-xs opacity-75 underline underline-offset-2">{t("helpCtaSecondary")}</p>
+        </section>
+
+        {related.length > 0 && (
+          <section>
+            <h2 className="text-xl font-bold text-on-surface mb-4">{t("relatedTitle")}</h2>
+            <div className="space-y-3">
+              {related.map((p) => (
+                <ProcedureCard key={p.id} procedure={p} />
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+function InfoCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Wallet;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 text-center">
+      <Icon size={18} className="text-primary mx-auto mb-1.5" />
+      <p className="text-[10px] uppercase font-semibold text-on-surface-variant tracking-wide">{label}</p>
+      <p className="text-sm font-bold text-on-surface mt-0.5 truncate">{value}</p>
+    </div>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/procedures/not-found.tsx
+// ============================================================
+
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import { FileQuestion } from "lucide-react";
+
+export default async function ProcedureNotFound() {
+  const t = await getTranslations("procedureDetail");
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-md mx-auto px-4 py-24 text-center">
+        <FileQuestion size={56} className="text-outline mx-auto mb-6" />
+        <h1 className="text-2xl font-bold text-on-surface mb-3">{t("notFoundTitle")}</h1>
+        <p className="text-on-surface-variant mb-8">{t("notFoundText")}</p>
+        <Link
+          href="/procedures"
+          className="inline-block bg-primary text-on-primary font-semibold px-6 py-3 rounded-lg hover:bg-primary-container transition-colors"
+        >
+          {t("backToList")}
+        </Link>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/procedures/page.tsx
+// Liste + recherche + filtre catégorie (rendu client pour l'interactivité,
+// données initiales pré-chargées côté serveur pour le SEO)
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { getAllProcedures, getCategories } from "@/lib/api";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import ProceduresListClient from "@/components/procedures/ProceduresListClient";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "proceduresList" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("subtitle"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/procedures`,
+      languages: { fr: `${baseUrl}/fr/procedures`, en: `${baseUrl}/en/procedures` },
+    },
+  };
+}
+
+export default async function ProceduresListPage() {
+  const [procedures, categories] = await Promise.all([
+    getAllProcedures(),
+    getCategories(),
+  ]);
+
+  return (
+    <>
+      <Header />
+      <ProceduresListClient initialProcedures={procedures} categories={categories} />
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/procedures/ProceduresListClient.tsx
+// Partie interactive (recherche/filtre) isolée en Client Component,
+// tout en gardant la page parent en Server Component pour le SEO.
+// ============================================================
+
+"use client";
+
+import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { Search, MessageCircle } from "lucide-react";
+import { ProcedureCard } from "./ProcedureCard";
+import type { ProcedureSummary, Category } from "@/lib/api";
+
+export default function ProceduresListClient({
+  initialProcedures,
+  categories,
+}: {
+  initialProcedures: ProcedureSummary[];
+  categories: Category[];
+}) {
+  const t = useTranslations("proceduresList");
+  const [search, setSearch] = useState("");
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [sort, setSort] = useState<"popular" | "az">("popular");
+
+  const filtered = useMemo(() => {
+    let list = initialProcedures;
+
+    if (categoryId) {
+      list = list.filter((p) => p.category?.id === categoryId);
+    }
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (p) => p.title.toLowerCase().includes(q) || p.summary?.toLowerCase().includes(q)
+      );
+    }
+
+    return [...list].sort((a, b) =>
+      sort === "az"
+        ? a.title.localeCompare(b.title)
+        : (b.popularity_score ?? 0) - (a.popularity_score ?? 0)
+    );
+  }, [initialProcedures, search, categoryId, sort]);
+
+  return (
+    <main className="max-w-container mx-auto px-4 md:px-8 py-10">
+      <div className="text-center max-w-xl mx-auto mb-10">
+        <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-3">{t("title")}</h1>
+        <p className="text-on-surface-variant">{t("subtitle")}</p>
+      </div>
+
+      <div className="relative max-w-xl mx-auto mb-6">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("searchPlaceholder")}
+          className="w-full pl-11 pr-4 py-3.5 rounded-full border border-outline-variant bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+        />
+      </div>
+
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            onClick={() => setCategoryId(null)}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+              categoryId === null
+                ? "bg-primary text-on-primary border-primary"
+                : "border-outline-variant text-on-surface-variant hover:border-primary"
+            }`}
+          >
+            {t("allCategories")}
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategoryId(cat.id)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                categoryId === cat.id
+                  ? "bg-primary text-on-primary border-primary"
+                  : "border-outline-variant text-on-surface-variant hover:border-primary"
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as "popular" | "az")}
+          className="text-sm border border-outline-variant rounded-lg px-3 py-2 bg-surface-container-lowest"
+        >
+          <option value="popular">{t("sortPopular")}</option>
+          <option value="az">{t("sortAz")}</option>
+        </select>
+      </div>
+
+      <p className="text-sm text-on-surface-variant mb-4">
+        {t("resultsCount", { count: filtered.length })}
+      </p>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-on-surface-variant mb-4">{t("noResults")}</p>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-primary text-on-primary font-semibold px-5 py-3 rounded-lg hover:bg-primary-container transition-colors"
+          >
+            <MessageCircle size={18} />
+            {t("noResultsCta")}
+          </a>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((p) => (
+            <ProcedureCard key={p.id} procedure={p} />
+          ))}
+        </div>
+      )}
+    </main>
+  );
+}

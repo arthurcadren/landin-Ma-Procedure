@@ -1,0 +1,559 @@
+// ============================================================
+// FICHIER: messages/fr.json — AJOUTS finaux
+// ============================================================
+
+/*
+{
+  "search": {
+    "title": "Rechercher une démarche",
+    "placeholder": "ex: Création d'entreprise",
+    "cta": "Rechercher",
+    "resultsCount": "{count} résultats trouvés pour votre recherche",
+    "noResults": "Aucun résultat pour \"{query}\"",
+    "noResultsCta": "Demander à notre assistant"
+  },
+  "about": {
+    "title": "Notre mission",
+    "intro": "Ma Procédure est né d'un constat simple : au Cameroun, comprendre et réaliser une démarche administrative prend souvent bien plus de temps que la démarche elle-même. Nous voulons changer cela.",
+    "missionTitle": "Ce que nous faisons",
+    "missionText": "Nous centralisons les informations officielles sur les procédures administratives et semi-administratives camerounaises, et connectons les citoyens à un réseau d'experts vérifiés pour les accompagner quand c'est nécessaire.",
+    "valuesTitle": "Nos valeurs",
+    "value1Title": "Accessibilité",
+    "value1Desc": "Un premier niveau d'information toujours gratuit et disponible 24/7.",
+    "value2Title": "Fiabilité",
+    "value2Desc": "Des contenus vérifiés, mis à jour régulièrement, jamais approximatifs.",
+    "value3Title": "Rapidité",
+    "value3Desc": "Moins de déplacements, moins d'attente, plus de clarté.",
+    "value4Title": "Sécurité",
+    "value4Desc": "Vos données et paiements protégés à chaque étape.",
+    "ctaTitle": "Rejoignez l'aventure",
+    "ctaText": "Que vous soyez citoyen ou expert, découvrez comment Ma Procédure peut vous accompagner.",
+    "cta": "Discuter sur WhatsApp"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Une question, une suggestion ? Notre équipe vous répond rapidement.",
+    "formName": "Nom complet",
+    "formEmail": "Adresse email",
+    "formSubject": "Sujet",
+    "formMessage": "Message",
+    "formSubmit": "Envoyer le message",
+    "formSuccess": "Merci, votre message a bien été envoyé !",
+    "infoTitle": "Autres moyens de nous joindre",
+    "whatsappLabel": "WhatsApp",
+    "emailLabel": "Email",
+    "addressLabel": "Adresse",
+    "addressValue": "Yaoundé, Cameroun"
+  },
+  "legal": {
+    "mentionsTitle": "Mentions Légales",
+    "privacyTitle": "Politique de Confidentialité",
+    "termsTitle": "Conditions Générales d'Utilisation",
+    "lastUpdated": "Dernière mise à jour : {date}"
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: messages/en.json — AJOUTS finaux (mêmes clés, traduites)
+// ============================================================
+
+/*
+{
+  "search": {
+    "title": "Search for a procedure",
+    "placeholder": "e.g. Business Registration",
+    "cta": "Search",
+    "resultsCount": "{count} results found for your search",
+    "noResults": "No results for \"{query}\"",
+    "noResultsCta": "Ask our assistant"
+  },
+  "about": {
+    "title": "Our mission",
+    "intro": "Ma Procédure was born from a simple observation: in Cameroon, understanding and completing an administrative procedure often takes longer than the procedure itself. We want to change that.",
+    "ctaTitle": "Join the journey",
+    "cta": "Chat on WhatsApp"
+  },
+  "contact": {
+    "title": "Contact us",
+    "subtitle": "A question, a suggestion? Our team replies quickly.",
+    "formSubmit": "Send message",
+    "formSuccess": "Thank you, your message has been sent!"
+  },
+  "legal": {
+    "mentionsTitle": "Legal Notice",
+    "privacyTitle": "Privacy Policy",
+    "termsTitle": "Terms of Use",
+    "lastUpdated": "Last updated: {date}"
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: app/[locale]/recherche/page.tsx
+// Page dédiée (URL indexable et partageable ?q=...), distincte de
+// /procedures qui reste la liste complète navigable par catégorie.
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { getAllProcedures } from "@/lib/api";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import { ProcedureCard } from "@/components/procedures/ProcedureCard";
+import SearchBox from "@/components/search/SearchBox";
+import { MessageCircle } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "search" });
+
+  return {
+    title: t("title"),
+    robots: { index: false, follow: true }, // pages de résultats de recherche : pas d'indexation directe
+  };
+}
+
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const t = await getTranslations("search");
+  const results = q ? await getAllProcedures({ search: q }) : [];
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-2xl mx-auto px-4 py-12">
+        <h1 className="text-2xl md:text-3xl font-bold text-on-surface mb-6 text-center">{t("title")}</h1>
+
+        <SearchBox initialQuery={q ?? ""} />
+
+        {q && (
+          <>
+            <p className="text-sm text-on-surface-variant my-6">
+              {t("resultsCount", { count: results.length })}
+            </p>
+
+            {results.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-on-surface-variant mb-4">{t("noResults", { query: q })}</p>
+                <a
+                  href="https://wa.me/237600000000"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-primary text-on-primary font-semibold px-5 py-3 rounded-lg hover:bg-primary-container transition-colors"
+                >
+                  <MessageCircle size={18} />
+                  {t("noResultsCta")}
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {results.map((p) => (
+                  <ProcedureCard key={p.id} procedure={p} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </main>
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/search/SearchBox.tsx
+// ============================================================
+
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
+import { Search } from "lucide-react";
+
+export default function SearchBox({ initialQuery }: { initialQuery: string }) {
+  const t = useTranslations("search");
+  const router = useRouter();
+  const [query, setQuery] = useState(initialQuery);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/recherche?q=${encodeURIComponent(query)}`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <div className="relative flex-1">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("placeholder")}
+          className="w-full pl-11 pr-4 py-3.5 rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+        />
+      </div>
+      <button
+        type="submit"
+        className="bg-primary text-on-primary font-semibold px-6 rounded-lg hover:bg-primary-container transition-colors"
+      >
+        {t("cta")}
+      </button>
+    </form>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/a-propos/page.tsx
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import { Users, ShieldCheck, Zap, Lock } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "about" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("intro"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/a-propos`,
+      languages: { fr: `${baseUrl}/fr/a-propos`, en: `${baseUrl}/en/a-propos` },
+    },
+  };
+}
+
+export default async function AboutPage() {
+  const t = await getTranslations("about");
+
+  const values = [
+    { icon: Zap, title: t("value1Title"), desc: t("value1Desc") },
+    { icon: ShieldCheck, title: t("value2Title"), desc: t("value2Desc") },
+    { icon: Users, title: t("value3Title"), desc: t("value3Desc") },
+    { icon: Lock, title: t("value4Title"), desc: t("value4Desc") },
+  ];
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-2xl mx-auto px-4 py-12">
+        <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-6 text-center">{t("title")}</h1>
+        <p className="text-on-surface-variant leading-relaxed mb-10 text-center">{t("intro")}</p>
+
+        <section className="mb-12">
+          <h2 className="text-xl font-bold text-on-surface mb-3">{t("missionTitle")}</h2>
+          <p className="text-on-surface-variant leading-relaxed">{t("missionText")}</p>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-xl font-bold text-on-surface mb-6">{t("valuesTitle")}</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {values.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="bg-surface-container-low rounded-xl p-5">
+                <Icon size={20} className="text-primary mb-3" />
+                <p className="font-semibold text-on-surface mb-1">{title}</p>
+                <p className="text-sm text-on-surface-variant">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="text-center bg-primary text-on-primary rounded-2xl p-8">
+          <h2 className="text-xl font-bold mb-2">{t("ctaTitle")}</h2>
+          <p className="opacity-90 text-sm mb-5">{t("ctaText")}</p>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-on-primary text-primary font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity"
+          >
+            {t("cta")}
+          </a>
+        </section>
+      </main>
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/contact/page.tsx
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import ContactForm from "@/components/contact/ContactForm";
+import { MessageCircle, Mail, MapPin } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "contact" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("subtitle"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/contact`,
+      languages: { fr: `${baseUrl}/fr/contact`, en: `${baseUrl}/en/contact` },
+    },
+  };
+}
+
+export default async function ContactPage() {
+  const t = await getTranslations("contact");
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-3xl mx-auto px-4 py-12 grid md:grid-cols-2 gap-10">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-on-surface mb-3">{t("title")}</h1>
+          <p className="text-on-surface-variant mb-8">{t("subtitle")}</p>
+          <ContactForm />
+        </div>
+
+        <div>
+          <h2 className="font-bold text-on-surface mb-4">{t("infoTitle")}</h2>
+          <div className="space-y-4">
+            <a
+              href="https://wa.me/237600000000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-surface-container-low rounded-xl p-4 hover:bg-surface-container transition-colors"
+            >
+              <MessageCircle size={20} className="text-primary" />
+              <div>
+                <p className="text-xs text-on-surface-variant">{t("whatsappLabel")}</p>
+                <p className="font-medium text-on-surface text-sm">+237 6 00 00 00 00</p>
+              </div>
+            </a>
+            <div className="flex items-center gap-3 bg-surface-container-low rounded-xl p-4">
+              <Mail size={20} className="text-primary" />
+              <div>
+                <p className="text-xs text-on-surface-variant">{t("emailLabel")}</p>
+                <p className="font-medium text-on-surface text-sm">contact@maprocedure.cm</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-surface-container-low rounded-xl p-4">
+              <MapPin size={20} className="text-primary" />
+              <div>
+                <p className="text-xs text-on-surface-variant">{t("addressLabel")}</p>
+                <p className="font-medium text-on-surface text-sm">{t("addressValue")}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/contact/ContactForm.tsx
+// Formulaire fonctionnel dès qu'un endpoint backend existe pour le
+// recevoir (POST /api/contact à créer côté Laravel si besoin).
+// ============================================================
+
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+
+export default function ContactForm() {
+  const t = useTranslations("contact");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    // TODO: brancher sur un endpoint POST /api/contact côté Laravel
+    await new Promise((r) => setTimeout(r, 600));
+    setStatus("success");
+  };
+
+  if (status === "success") {
+    return (
+      <div className="bg-primary-container/10 rounded-xl p-6 text-center">
+        <p className="font-semibold text-primary">{t("formSuccess")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-on-surface mb-1.5">{t("formName")}</label>
+        <input required className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-on-surface mb-1.5">{t("formEmail")}</label>
+        <input type="email" required className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-on-surface mb-1.5">{t("formSubject")}</label>
+        <input required className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-on-surface mb-1.5">{t("formMessage")}</label>
+        <textarea required rows={4} className="w-full px-4 py-3 rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+      </div>
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="w-full bg-primary text-on-primary font-semibold py-3 rounded-lg hover:bg-primary-container transition-colors disabled:opacity-60"
+      >
+        {status === "loading" ? "..." : t("formSubmit")}
+      </button>
+    </form>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/legal/mentions-legales/page.tsx
+// ============================================================
+
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+
+export default async function MentionsLegalesPage() {
+  const t = await getTranslations("legal");
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-2xl mx-auto px-4 py-12 prose prose-sm">
+        <h1 className="text-2xl font-bold text-on-surface mb-2">{t("mentionsTitle")}</h1>
+        <p className="text-xs text-on-surface-variant mb-8">
+          {t("lastUpdated", { date: new Date().toLocaleDateString("fr-FR") })}
+        </p>
+        <div className="text-on-surface-variant leading-relaxed space-y-4 text-sm">
+          <p>Ma Procédure est édité depuis Yaoundé, République du Cameroun.</p>
+          <p>Contact : contact@maprocedure.cm</p>
+          <p>
+            Ce contenu est un modèle de départ — à faire relire et compléter par un
+            professionnel du droit avant mise en production, notamment concernant le
+            statut juridique exact de la structure éditrice et l'hébergeur du site.
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/legal/confidentialite/page.tsx
+// ============================================================
+
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+
+export default async function ConfidentialitePage() {
+  const t = await getTranslations("legal");
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-2xl mx-auto px-4 py-12 prose prose-sm">
+        <h1 className="text-2xl font-bold text-on-surface mb-2">{t("privacyTitle")}</h1>
+        <p className="text-xs text-on-surface-variant mb-8">
+          {t("lastUpdated", { date: new Date().toLocaleDateString("fr-FR") })}
+        </p>
+        <div className="text-on-surface-variant leading-relaxed space-y-4 text-sm">
+          <p>
+            Nous collectons uniquement les informations nécessaires au traitement de vos
+            demandes (nom, téléphone, dossier concerné). Ces données sont utilisées
+            exclusivement dans le cadre de la prestation demandée et ne sont jamais
+            revendues à des tiers.
+          </p>
+          <p>
+            Ce contenu est un modèle de départ — à compléter avec le détail exact de vos
+            traitements de données (durée de conservation, droits d'accès, sous-traitants
+            comme Fapshi et WHAPI) avant mise en production.
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/legal/cgu/page.tsx
+// ============================================================
+
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+
+export default async function CguPage() {
+  const t = await getTranslations("legal");
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-2xl mx-auto px-4 py-12 prose prose-sm">
+        <h1 className="text-2xl font-bold text-on-surface mb-2">{t("termsTitle")}</h1>
+        <p className="text-xs text-on-surface-variant mb-8">
+          {t("lastUpdated", { date: new Date().toLocaleDateString("fr-FR") })}
+        </p>
+        <div className="text-on-surface-variant leading-relaxed space-y-4 text-sm">
+          <p>
+            L'utilisation du service d'information (Niveau 1, gratuit) est libre. Les
+            services de consultation et de délégation (Niveaux 2 et 3) font l'objet d'un
+            paiement préalable via Fapshi (Mobile Money / Orange Money), non remboursable
+            sauf cas de non-faisabilité constatée après étude du dossier.
+          </p>
+          <p>
+            Ce contenu est un modèle de départ — à faire valider par un professionnel du
+            droit avant mise en production.
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}

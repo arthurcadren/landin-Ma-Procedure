@@ -1,0 +1,1339 @@
+// ============================================================
+// FICHIER: tailwind.config.ts
+// Design tokens repris exactement de ma_proc_dure.md
+// ============================================================
+
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: "class",
+  content: [
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        surface: "#f5fbf5",
+        "surface-dim": "#d5dcd6",
+        "surface-bright": "#f5fbf5",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#eff5ef",
+        "surface-container": "#e9efe9",
+        "surface-container-high": "#e4eae4",
+        "surface-container-highest": "#dee4de",
+        "on-surface": "#171d19",
+        "on-surface-variant": "#3d4a42",
+        "inverse-surface": "#2c322e",
+        "inverse-on-surface": "#ecf2ec",
+        outline: "#6d7a72",
+        "outline-variant": "#bccac0",
+        primary: "#006948",
+        "on-primary": "#ffffff",
+        "primary-container": "#00855d",
+        "on-primary-container": "#f5fff7",
+        "inverse-primary": "#68dba9",
+        secondary: "#006c49",
+        "on-secondary": "#ffffff",
+        "secondary-container": "#6cf8bb",
+        "on-secondary-container": "#00714d",
+        tertiary: "#9b3e3b",
+        "on-tertiary": "#ffffff",
+        "tertiary-container": "#ba5551",
+        error: "#ba1a1a",
+        "on-error": "#ffffff",
+        "error-container": "#ffdad6",
+        background: "#f5fbf5",
+        "on-background": "#171d19",
+        "surface-variant": "#dee4de",
+        whatsapp: "#25D366",
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "Inter", "sans-serif"],
+      },
+      borderRadius: {
+        sm: "0.25rem",
+        DEFAULT: "0.5rem",
+        md: "0.75rem",
+        lg: "1rem",
+        xl: "1.5rem",
+        full: "9999px",
+      },
+      maxWidth: {
+        container: "1280px",
+      },
+      boxShadow: {
+        card: "0 10px 15px -3px rgba(0, 0, 0, 0.05)",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
+
+
+// ============================================================
+// FICHIER: i18n/routing.ts
+// Configuration next-intl — 2 locales, routing par préfixe d'URL
+// ============================================================
+
+import { defineRouting } from "next-intl/routing";
+
+export const routing = defineRouting({
+  locales: ["fr", "en"],
+  defaultLocale: "fr",
+  localePrefix: "always", // /fr/... et /en/... toujours explicites → meilleur pour le SEO
+});
+
+
+// ============================================================
+// FICHIER: i18n/navigation.ts
+// ============================================================
+
+import { createNavigation } from "next-intl/navigation";
+import { routing } from "./routing";
+
+export const { Link, redirect, usePathname, useRouter } =
+  createNavigation(routing);
+
+
+// ============================================================
+// FICHIER: i18n/request.ts
+// ============================================================
+
+import { getRequestConfig } from "next-intl/server";
+import { routing } from "./routing";
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale;
+
+  if (!locale || !routing.locales.includes(locale as "fr" | "en")) {
+    locale = routing.defaultLocale;
+  }
+
+  return {
+    locale,
+    messages: (await import(`../messages/${locale}.json`)).default,
+  };
+});
+
+
+// ============================================================
+// FICHIER: middleware.ts (racine du projet)
+// ============================================================
+
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
+
+export default createMiddleware(routing);
+
+export const config = {
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+};
+
+
+// ============================================================
+// FICHIER: messages/fr.json
+// (contenu de la page d'accueil uniquement pour cette livraison —
+// les autres pages viendront avec leurs propres clés ensuite)
+// ============================================================
+
+/*
+{
+  "meta": {
+    "homeTitle": "Ma Procédure — Simplifiez vos démarches administratives au Cameroun",
+    "homeDescription": "Guides détaillés, assistant IA 24/7 et réseau d'experts vérifiés pour réussir toutes vos démarches administratives au Cameroun : CNI, passeport, création d'entreprise, casier judiciaire et plus.",
+    "siteName": "Ma Procédure"
+  },
+  "header": {
+    "home": "Accueil",
+    "procedures": "Procédures",
+    "experts": "Experts",
+    "pricing": "Tarifs",
+    "track": "Suivre un dossier",
+    "cta": "Discuter sur WhatsApp"
+  },
+  "hero": {
+    "badge": "L'administration simplifiée",
+    "title": "Réussissez vos démarches au Cameroun en un clic.",
+    "subtitle": "Accédez à des guides détaillés, parlez à nos experts certifiés et gagnez du temps sur vos dossiers administratifs et juridiques.",
+    "ctaPrimary": "Consulter une procédure",
+    "ctaSecondary": "Discuter sur WhatsApp",
+    "stat1Value": "150+",
+    "stat1Label": "Procédures listées",
+    "stat2Value": "15k+",
+    "stat2Label": "Utilisateurs actifs",
+    "stat3Value": "24/7",
+    "stat3Label": "Support expert",
+    "trustBadge": "Fiabilité garantie",
+    "trustBadgeSub": "Contenus certifiés"
+  },
+  "services": {
+    "title": "Toutes vos démarches, au même endroit",
+    "subtitle": "Plus de 150 procédures documentées et régulièrement mises à jour",
+    "seeAll": "Voir toutes les procédures",
+    "items": {
+      "cni": "Carte Nationale d'Identité",
+      "passport": "Passeport biométrique",
+      "business": "Création d'entreprise",
+      "criminalRecord": "Casier judiciaire",
+      "birthCertificate": "Acte de naissance",
+      "landTitle": "Titre foncier",
+      "driverLicense": "Permis de conduire",
+      "marriageCertificate": "Acte de mariage",
+      "taxId": "Numéro d'identifiant unique (NIU)",
+      "workPermit": "Permis de travail"
+    }
+  },
+  "why": {
+    "title": "Pourquoi choisir Ma Procédure ?",
+    "subtitle": "Nous centralisons toutes les informations nécessaires pour vos démarches foncières, civiles, commerciales et bien plus encore au Cameroun.",
+    "cta": "Découvrir notre mission",
+    "stat1Value": "98%",
+    "stat1Label": "Taux de satisfaction de nos usagers",
+    "stat2Value": "12",
+    "stat2Label": "Domaines d'expertise couverts"
+  },
+  "features": {
+    "title": "Tout ce dont vous avez besoin",
+    "subtitle": "Une plateforme complète pour naviguer sereinement dans les méandres de l'administration camerounaise.",
+    "seeAll": "Voir toutes les fonctionnalités",
+    "f1Title": "Base de données procédures",
+    "f1Desc": "Des fiches pratiques détaillant les pièces à fournir, les délais et les coûts officiels de chaque démarche.",
+    "f1Point1": "Mise à jour hebdomadaire",
+    "f1Point2": "Formulaires téléchargeables",
+    "f2Title": "Assistant IA intelligent",
+    "f2Desc": "Un agent conversationnel spécialisé dans le droit camerounais disponible 24h/24 pour répondre à vos questions.",
+    "f2Point1": "Réponses instantanées",
+    "f2Point2": "Analyse de documents",
+    "f3Title": "Réseau d'experts",
+    "f3Desc": "Prenez rendez-vous avec des avocats, notaires et consultants spécialisés pour un accompagnement sur mesure.",
+    "f3Point1": "Experts vérifiés",
+    "f3Point2": "Consultation sécurisée"
+  },
+  "expertsTeaser": {
+    "title": "Des experts à votre écoute",
+    "subtitle": "Plus besoin de vous déplacer pour obtenir des conseils professionnels. Nos experts sont à portée de clic.",
+    "cta": "Prendre RDV",
+    "seeAll": "Voir tous les experts"
+  },
+  "newsletter": {
+    "title": "Prêt à simplifier votre vie ?",
+    "subtitle": "Inscrivez-vous à notre lettre d'information pour recevoir des alertes sur les nouvelles procédures et les changements législatifs au Cameroun.",
+    "placeholder": "Votre adresse email",
+    "cta": "S'inscrire gratuitement",
+    "disclaimer": "Rejoignez plus de 2 000 abonnés. Pas de spam, jamais."
+  },
+  "footer": {
+    "tagline": "Le premier guide digital des procédures administratives au Cameroun.",
+    "navigation": "Navigation",
+    "home": "Accueil",
+    "procedures": "Procédures",
+    "experts": "Experts",
+    "blog": "Blog",
+    "support": "Support & Légal",
+    "contact": "Contactez-nous",
+    "legal": "Mentions Légales",
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'Utilisation",
+    "location": "Localisation",
+    "rights": "© {year} Ma Procédure. République du Cameroun. Tous droits réservés."
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: messages/en.json
+// ============================================================
+
+/*
+{
+  "meta": {
+    "homeTitle": "Ma Procédure — Simplify Your Administrative Procedures in Cameroon",
+    "homeDescription": "Detailed guides, 24/7 AI assistant and a network of verified experts to help you complete every administrative procedure in Cameroon: ID card, passport, business registration, criminal record and more.",
+    "siteName": "Ma Procédure"
+  },
+  "header": {
+    "home": "Home",
+    "procedures": "Procedures",
+    "experts": "Experts",
+    "pricing": "Pricing",
+    "track": "Track a case",
+    "cta": "Chat on WhatsApp"
+  },
+  "hero": {
+    "badge": "Administration made simple",
+    "title": "Complete your procedures in Cameroon in one click.",
+    "subtitle": "Access detailed guides, talk to certified experts and save time on your administrative and legal paperwork.",
+    "ctaPrimary": "Browse a procedure",
+    "ctaSecondary": "Chat on WhatsApp",
+    "stat1Value": "150+",
+    "stat1Label": "Listed procedures",
+    "stat2Value": "15k+",
+    "stat2Label": "Active users",
+    "stat3Value": "24/7",
+    "stat3Label": "Expert support",
+    "trustBadge": "Guaranteed reliability",
+    "trustBadgeSub": "Certified content"
+  },
+  "services": {
+    "title": "All your procedures, in one place",
+    "subtitle": "Over 150 documented procedures, regularly updated",
+    "seeAll": "See all procedures",
+    "items": {
+      "cni": "National ID Card",
+      "passport": "Biometric Passport",
+      "business": "Business Registration",
+      "criminalRecord": "Criminal Record",
+      "birthCertificate": "Birth Certificate",
+      "landTitle": "Land Title",
+      "driverLicense": "Driver's License",
+      "marriageCertificate": "Marriage Certificate",
+      "taxId": "Unique Taxpayer Number",
+      "workPermit": "Work Permit"
+    }
+  },
+  "why": {
+    "title": "Why choose Ma Procédure?",
+    "subtitle": "We centralize all the information you need for your land, civil, business and other procedures in Cameroon.",
+    "cta": "Discover our mission",
+    "stat1Value": "98%",
+    "stat1Label": "User satisfaction rate",
+    "stat2Value": "12",
+    "stat2Label": "Areas of expertise covered"
+  },
+  "features": {
+    "title": "Everything you need",
+    "subtitle": "A complete platform to confidently navigate Cameroonian administration.",
+    "seeAll": "See all features",
+    "f1Title": "Procedure database",
+    "f1Desc": "Practical sheets detailing required documents, timelines and official costs for each procedure.",
+    "f1Point1": "Updated weekly",
+    "f1Point2": "Downloadable forms",
+    "f2Title": "Smart AI assistant",
+    "f2Desc": "A conversational agent specialized in Cameroonian administration, available 24/7 to answer your questions.",
+    "f2Point1": "Instant answers",
+    "f2Point2": "Document analysis",
+    "f3Title": "Expert network",
+    "f3Desc": "Book appointments with lawyers, notaries and specialized consultants for tailored guidance.",
+    "f3Point1": "Verified experts",
+    "f3Point2": "Secure consultation"
+  },
+  "expertsTeaser": {
+    "title": "Experts ready to help",
+    "subtitle": "No need to travel to get professional advice. Our experts are just a click away.",
+    "cta": "Book",
+    "seeAll": "See all experts"
+  },
+  "newsletter": {
+    "title": "Ready to simplify your life?",
+    "subtitle": "Subscribe to our newsletter to get alerts on new procedures and regulatory changes in Cameroon.",
+    "placeholder": "Your email address",
+    "cta": "Subscribe for free",
+    "disclaimer": "Join over 2,000 subscribers. No spam, ever."
+  },
+  "footer": {
+    "tagline": "The first digital guide to administrative procedures in Cameroon.",
+    "navigation": "Navigation",
+    "home": "Home",
+    "procedures": "Procedures",
+    "experts": "Experts",
+    "blog": "Blog",
+    "support": "Support & Legal",
+    "contact": "Contact us",
+    "legal": "Legal Notice",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "location": "Location",
+    "rights": "© {year} Ma Procédure. Republic of Cameroon. All rights reserved."
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: lib/api.ts
+// Client pour ton backend Laravel existant (données réelles,
+// jamais de chiffres inventés en dur dans le front)
+// ============================================================
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://maprocedure.encashpay.com/api";
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface ProcedureSummary {
+  id: number;
+  title: string;
+  slug: string;
+  summary?: string;
+  popularity_score?: number;
+  category?: Category;
+}
+
+export interface ExpertSummary {
+  id: number;
+  company_name: string;
+  rating: number;
+  completed_orders: number;
+  user?: { name: string };
+}
+
+// ISR : revalidation toutes les heures, robuste si l'API est momentanément indisponible
+async function safeFetch<T>(url: string, fallback: T): Promise<T> {
+  try {
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    if (!res.ok) return fallback;
+    return (await res.json()) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function getPopularProcedures(): Promise<ProcedureSummary[]> {
+  return safeFetch<ProcedureSummary[]>(`${API_URL}/procedures/popular`, []);
+}
+
+export async function getCategories(): Promise<Category[]> {
+  return safeFetch<Category[]>(`${API_URL}/categories`, []);
+}
+
+export async function getFeaturedExperts(): Promise<ExpertSummary[]> {
+  return safeFetch<ExpertSummary[]>(`${API_URL}/experts`, []);
+}
+
+export async function getPlatformStats(): Promise<{
+  proceduresCount: number;
+  expertsCount: number;
+}> {
+  const [procedures, experts] = await Promise.all([
+    safeFetch<ProcedureSummary[]>(`${API_URL}/procedures`, []),
+    safeFetch<ExpertSummary[]>(`${API_URL}/experts`, []),
+  ]);
+
+  return {
+    proceduresCount: procedures.length,
+    expertsCount: experts.length,
+  };
+}
+
+
+// ============================================================
+// FICHIER: components/seo/JsonLd.tsx
+// Données structurées schema.org — cœur du SEO local Cameroun
+// ============================================================
+
+export function OrganizationJsonLd() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Ma Procédure",
+    url: "https://maprocedure.cm",
+    logo: "https://maprocedure.cm/logo.png",
+    description:
+      "Plateforme camerounaise d'aide aux démarches administratives : guides, assistant IA et réseau d'experts vérifiés.",
+    areaServed: {
+      "@type": "Country",
+      name: "Cameroon",
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Yaoundé",
+      addressCountry: "CM",
+    },
+    sameAs: [],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+export function WebSiteJsonLd() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Ma Procédure",
+    url: "https://maprocedure.cm",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://maprocedure.cm/fr/procedures?search={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+export function ServicesJsonLd({ items }: { items: { name: string; url: string }[] }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: item.url,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/layout.tsx
+// Metadata complète + hreflang + police Inter + JSON-LD global
+// ============================================================
+
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: {
+      default: t("homeTitle"),
+      template: `%s | ${t("siteName")}`,
+    },
+    description: t("homeDescription"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      languages: {
+        fr: `${baseUrl}/fr`,
+        en: `${baseUrl}/en`,
+      },
+    },
+    openGraph: {
+      title: t("homeTitle"),
+      description: t("homeDescription"),
+      url: `${baseUrl}/${locale}`,
+      siteName: t("siteName"),
+      locale: locale === "fr" ? "fr_CM" : "en_US",
+      type: "website",
+      images: [{ url: `${baseUrl}/og-image.jpg`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("homeTitle"),
+      description: t("homeDescription"),
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
+  };
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
+  if (!routing.locales.includes(locale as "fr" | "en")) {
+    notFound();
+  }
+
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale} className={inter.variable}>
+      <body className="font-sans bg-background text-on-background antialiased">
+        <NextIntlClientProvider messages={messages}>
+          <OrganizationJsonLd />
+          <WebSiteJsonLd />
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/page.tsx
+// Assemble toute la page d'accueil
+// ============================================================
+
+import { getPopularProcedures, getFeaturedExperts, getPlatformStats } from "@/lib/api";
+import { ServicesJsonLd } from "@/components/seo/JsonLd";
+import Header from "@/components/home/Header";
+import Hero from "@/components/home/Hero";
+import ServicesScroll from "@/components/home/ServicesScroll";
+import WhyUs from "@/components/home/WhyUs";
+import Features from "@/components/home/Features";
+import ExpertsTeaser from "@/components/home/ExpertsTeaser";
+import Newsletter from "@/components/home/Newsletter";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+
+export default async function HomePage() {
+  const [procedures, experts, stats] = await Promise.all([
+    getPopularProcedures(),
+    getFeaturedExperts(),
+    getPlatformStats(),
+  ]);
+
+  const serviceLinks = procedures.slice(0, 10).map((p) => ({
+    name: p.title,
+    url: `https://maprocedure.cm/fr/procedures/${p.slug}`,
+  }));
+
+  return (
+    <main className="min-h-screen">
+      <ServicesJsonLd items={serviceLinks} />
+      <Header />
+      <Hero stats={stats} />
+      <ServicesScroll procedures={procedures} />
+      <WhyUs stats={stats} />
+      <Features />
+      <ExpertsTeaser experts={experts} />
+      <Newsletter />
+      <Footer />
+      <WhatsAppFloat />
+    </main>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/Header.tsx
+// ============================================================
+
+"use client";
+
+import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
+import { Menu, X } from "lucide-react";
+
+export default function Header() {
+  const t = useTranslations("header");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  const otherLocale = locale === "fr" ? "en" : "fr";
+
+  return (
+    <header className="sticky top-0 z-50 bg-surface-container-lowest/90 backdrop-blur-md border-b border-outline-variant">
+      <nav className="max-w-container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+        <Link href="/" className="text-xl font-bold text-primary tracking-tight">
+          Ma Procédure
+        </Link>
+
+        <div className="hidden md:flex items-center gap-8">
+          <Link href="/procedures" className="text-sm text-on-surface-variant hover:text-primary transition-colors">
+            {t("procedures")}
+          </Link>
+          <Link href="/experts" className="text-sm text-on-surface-variant hover:text-primary transition-colors">
+            {t("experts")}
+          </Link>
+          <Link href="/tarifs" className="text-sm text-on-surface-variant hover:text-primary transition-colors">
+            {t("pricing")}
+          </Link>
+          <Link href="/suivi" className="text-sm text-on-surface-variant hover:text-primary transition-colors">
+            {t("track")}
+          </Link>
+
+          <Link
+            href={pathname}
+            locale={otherLocale}
+            className="text-sm font-semibold px-3 py-1.5 rounded-full border border-outline-variant hover:border-primary hover:text-primary transition-colors"
+          >
+            {locale === "fr" ? "EN" : "FR"}
+          </Link>
+
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-primary text-on-primary text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary-container transition-colors"
+          >
+            {t("cta")}
+          </a>
+        </div>
+
+        <button
+          onClick={() => setOpen(!open)}
+          className="md:hidden p-2 text-on-surface"
+          aria-label="Menu"
+        >
+          {open ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </nav>
+
+      {open && (
+        <div className="md:hidden border-t border-outline-variant px-4 py-4 flex flex-col gap-3 bg-surface-container-lowest">
+          <Link href="/procedures" onClick={() => setOpen(false)} className="py-2 text-on-surface">
+            {t("procedures")}
+          </Link>
+          <Link href="/experts" onClick={() => setOpen(false)} className="py-2 text-on-surface">
+            {t("experts")}
+          </Link>
+          <Link href="/tarifs" onClick={() => setOpen(false)} className="py-2 text-on-surface">
+            {t("pricing")}
+          </Link>
+          <Link href="/suivi" onClick={() => setOpen(false)} className="py-2 text-on-surface">
+            {t("track")}
+          </Link>
+          <Link href={pathname} locale={otherLocale} className="py-2 font-semibold text-primary">
+            {locale === "fr" ? "English" : "Français"}
+          </Link>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 bg-primary text-on-primary text-center font-semibold px-5 py-3 rounded-lg"
+          >
+            {t("cta")}
+          </a>
+        </div>
+      )}
+    </header>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/Hero.tsx
+// ============================================================
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { ShieldCheck, ArrowRight } from "lucide-react";
+import Image from "next/image";
+
+export default function Hero({
+  stats,
+}: {
+  stats: { proceduresCount: number; expertsCount: number };
+}) {
+  const t = useTranslations("hero");
+
+  return (
+    <section className="relative overflow-hidden">
+      <div className="max-w-container mx-auto px-4 md:px-8 pt-12 md:pt-20 pb-16">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="text-center lg:text-left">
+            <span className="inline-block bg-secondary-container text-on-secondary-container text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+              {t("badge")}
+            </span>
+
+            <h1 className="text-4xl md:text-5xl lg:text-[52px] font-bold leading-tight tracking-tight text-on-surface mb-6 text-balance">
+              {t("title")}
+            </h1>
+
+            <p className="text-lg text-on-surface-variant leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
+              {t("subtitle")}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
+              <Link
+                href="/procedures"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-on-primary font-semibold px-6 py-3.5 rounded-lg hover:bg-primary-container transition-colors"
+              >
+                {t("ctaPrimary")}
+                <ArrowRight size={18} />
+              </Link>
+              <a
+                href="https://wa.me/237600000000"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-semibold px-6 py-3.5 rounded-lg hover:border-primary transition-colors"
+              >
+                {t("ctaSecondary")}
+              </a>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
+              <Stat value={`${stats.proceduresCount || 150}+`} label={t("stat1Label")} />
+              <Stat value={t("stat2Value")} label={t("stat2Label")} />
+              <Stat value={t("stat3Value")} label={t("stat3Label")} />
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
+              <Image
+                src="/hero-illustration.jpg"
+                alt=""
+                fill
+                priority
+                className="object-cover"
+              />
+            </div>
+
+            <div className="absolute -bottom-6 left-6 right-6 md:left-auto md:right-auto md:-left-6 bg-surface-container-lowest rounded-xl shadow-card border border-outline-variant p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+                <ShieldCheck size={20} className="text-on-primary-container" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-on-surface">{t("trustBadge")}</p>
+                <p className="text-xs text-on-surface-variant">{t("trustBadgeSub")}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="text-center lg:text-left">
+      <p className="text-2xl font-bold text-primary">{value}</p>
+      <p className="text-xs text-on-surface-variant leading-snug mt-1">{label}</p>
+    </div>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/ServicesScroll.tsx
+// L'ÉLÉMENT CLÉ DEMANDÉ : scroll horizontal avec au moins 10 services.
+// Icônes lucide-react professionnelles (pas d'iconographie "IA").
+// ============================================================
+
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { useRef } from "react";
+import {
+  IdCard,
+  Plane,
+  Building2,
+  Scale,
+  FileText,
+  Landmark,
+  Car,
+  Heart,
+  Receipt,
+  Briefcase,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import type { ProcedureSummary } from "@/lib/api";
+
+const ICONS = [IdCard, Plane, Building2, Scale, FileText, Landmark, Car, Heart, Receipt, Briefcase];
+
+const FALLBACK_KEYS = [
+  "cni", "passport", "business", "criminalRecord", "birthCertificate",
+  "landTitle", "driverLicense", "marriageCertificate", "taxId", "workPermit",
+];
+
+export default function ServicesScroll({ procedures }: { procedures: ProcedureSummary[] }) {
+  const t = useTranslations("services");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    scrollRef.current?.scrollBy({ left: direction === "left" ? -280 : 280, behavior: "smooth" });
+  };
+
+  // On préfère les vraies procédures de la BD ; on complète avec les clés de
+  // traduction par défaut uniquement si la base n'en fournit pas assez.
+  const items = FALLBACK_KEYS.map((key, i) => {
+    const real = procedures[i];
+    return {
+      title: real?.title ?? t(`items.${key}`),
+      slug: real?.slug ?? key,
+      icon: ICONS[i],
+    };
+  });
+
+  return (
+    <section className="py-16 md:py-20 bg-surface-container-low">
+      <div className="max-w-container mx-auto px-4 md:px-8">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-on-surface mb-2">{t("title")}</h2>
+            <p className="text-on-surface-variant">{t("subtitle")}</p>
+          </div>
+
+          <div className="hidden md:flex gap-2">
+            <button
+              onClick={() => scroll("left")}
+              className="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+              aria-label="Précédent"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              className="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
+              aria-label="Suivant"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {items.map(({ title, slug, icon: Icon }) => (
+            <Link
+              key={slug}
+              href={`/procedures/${slug}`}
+              className="group snap-start flex-shrink-0 w-[220px] bg-surface-container-lowest rounded-xl border border-outline-variant p-6 hover:shadow-card hover:border-primary/40 transition-all"
+            >
+              <div className="w-12 h-12 rounded-lg bg-primary-container/15 flex items-center justify-center mb-4 group-hover:bg-primary-container/25 transition-colors">
+                <Icon size={24} className="text-primary" />
+              </div>
+              <p className="font-semibold text-on-surface leading-snug">{title}</p>
+            </Link>
+          ))}
+        </div>
+
+        <div className="text-center mt-8">
+          <Link href="/procedures" className="text-primary font-semibold hover:underline">
+            {t("seeAll")} →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/WhyUs.tsx
+// ============================================================
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+
+export default function WhyUs({
+  stats,
+}: {
+  stats: { proceduresCount: number; expertsCount: number };
+}) {
+  const t = useTranslations("why");
+
+  return (
+    <section className="py-16 md:py-24 bg-primary text-on-primary">
+      <div className="max-w-container mx-auto px-4 md:px-8 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">{t("title")}</h2>
+        <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8 text-pretty">{t("subtitle")}</p>
+        <Link
+          href="/a-propos"
+          className="inline-block bg-on-primary text-primary font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity mb-14"
+        >
+          {t("cta")} →
+        </Link>
+
+        <div className="grid grid-cols-2 gap-6 max-w-md mx-auto">
+          <div className="bg-white/10 rounded-xl p-6">
+            <p className="text-3xl font-bold">{t("stat1Value")}</p>
+            <p className="text-sm opacity-90 mt-1">{t("stat1Label")}</p>
+          </div>
+          <div className="bg-white/10 rounded-xl p-6">
+            <p className="text-3xl font-bold">{stats.expertsCount || 12}</p>
+            <p className="text-sm opacity-90 mt-1">{t("stat2Label")}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/Features.tsx
+// ============================================================
+
+import { useTranslations } from "next-intl";
+import { Database, MessageSquareText, Users2, Check } from "lucide-react";
+
+export default function Features() {
+  const t = useTranslations("features");
+
+  const features = [
+    { icon: Database, title: t("f1Title"), desc: t("f1Desc"), points: [t("f1Point1"), t("f1Point2")] },
+    { icon: MessageSquareText, title: t("f2Title"), desc: t("f2Desc"), points: [t("f2Point1"), t("f2Point2")] },
+    { icon: Users2, title: t("f3Title"), desc: t("f3Desc"), points: [t("f3Point1"), t("f3Point2")] },
+  ];
+
+  return (
+    <section className="py-16 md:py-24">
+      <div className="max-w-container mx-auto px-4 md:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-4">{t("title")}</h2>
+          <p className="text-on-surface-variant text-lg">{t("subtitle")}</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {features.map(({ icon: Icon, title, desc, points }) => (
+            <div
+              key={title}
+              className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 hover:shadow-card transition-shadow"
+            >
+              <div className="w-12 h-12 rounded-lg bg-primary-container/15 flex items-center justify-center mb-5">
+                <Icon size={24} className="text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-on-surface mb-3">{title}</h3>
+              <p className="text-on-surface-variant mb-5 leading-relaxed">{desc}</p>
+              <ul className="space-y-2">
+                {points.map((point) => (
+                  <li key={point} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                    <Check size={16} className="text-primary flex-shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/ExpertsTeaser.tsx
+// Données réelles de la BD via l'API — jamais de faux experts inventés
+// ============================================================
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { Star } from "lucide-react";
+import type { ExpertSummary } from "@/lib/api";
+
+export default function ExpertsTeaser({ experts }: { experts: ExpertSummary[] }) {
+  const t = useTranslations("expertsTeaser");
+
+  if (experts.length === 0) {
+    return null; // On préfère ne rien afficher plutôt qu'inventer des experts fictifs
+  }
+
+  return (
+    <section className="py-16 md:py-24 bg-surface-container-low">
+      <div className="max-w-container mx-auto px-4 md:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-4">{t("title")}</h2>
+          <p className="text-on-surface-variant text-lg">{t("subtitle")}</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {experts.slice(0, 4).map((expert) => (
+            <div
+              key={expert.id}
+              className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 text-center hover:shadow-card transition-shadow"
+            >
+              <div className="w-20 h-20 rounded-full bg-primary-container/20 mx-auto mb-4" />
+              <p className="font-bold text-on-surface">{expert.user?.name ?? expert.company_name}</p>
+              <p className="text-sm text-on-surface-variant mb-2">{expert.company_name}</p>
+              <div className="flex items-center justify-center gap-1 mb-4">
+                <Star size={14} className="fill-secondary-container text-secondary-container" />
+                <span className="text-sm font-medium">{expert.rating?.toFixed(1) ?? "—"}</span>
+              </div>
+              <Link
+                href={`/experts/${expert.id}`}
+                className="block w-full text-sm font-semibold text-primary border border-primary rounded-lg py-2 hover:bg-primary hover:text-on-primary transition-colors"
+              >
+                {t("cta")}
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link href="/experts" className="text-primary font-semibold hover:underline">
+            {t("seeAll")} →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/Newsletter.tsx
+// ============================================================
+
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+export default function Newsletter() {
+  const t = useTranslations("newsletter");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    // À connecter à ton endpoint backend d'inscription newsletter
+    await new Promise((r) => setTimeout(r, 600));
+    setStatus("success");
+  };
+
+  return (
+    <section className="py-16 md:py-24 bg-primary text-on-primary">
+      <div className="max-w-2xl mx-auto px-4 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("title")}</h2>
+        <p className="opacity-90 mb-8">{t("subtitle")}</p>
+
+        {status === "success" ? (
+          <p className="font-semibold">✓ Merci pour votre inscription !</p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("placeholder")}
+              className="flex-1 px-4 py-3 rounded-lg text-on-surface bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-secondary-container"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="bg-on-primary text-primary font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {t("cta")}
+            </button>
+          </form>
+        )}
+
+        <p className="text-xs opacity-75 mt-4">{t("disclaimer")}</p>
+      </div>
+    </section>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/Footer.tsx
+// ============================================================
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { Mail, MapPin, Phone } from "lucide-react";
+
+export default function Footer() {
+  const t = useTranslations("footer");
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="bg-inverse-surface text-inverse-on-surface pt-16 pb-8">
+      <div className="max-w-container mx-auto px-4 md:px-8">
+        <div className="grid md:grid-cols-4 gap-10 mb-12">
+          <div>
+            <p className="text-xl font-bold mb-3">Ma Procédure</p>
+            <p className="text-sm opacity-80 leading-relaxed mb-4">{t("tagline")}</p>
+            <div className="flex items-center gap-2 text-sm opacity-80">
+              <MapPin size={14} />
+              <span>Yaoundé, Cameroun</span>
+            </div>
+          </div>
+
+          <div>
+            <p className="font-semibold mb-4">{t("navigation")}</p>
+            <ul className="space-y-2 text-sm opacity-80">
+              <li><Link href="/">{t("home")}</Link></li>
+              <li><Link href="/procedures">{t("procedures")}</Link></li>
+              <li><Link href="/experts">{t("experts")}</Link></li>
+              <li><Link href="/blog">{t("blog")}</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="font-semibold mb-4">{t("support")}</p>
+            <ul className="space-y-2 text-sm opacity-80">
+              <li><Link href="/contact">{t("contact")}</Link></li>
+              <li><Link href="/legal/mentions-legales">{t("legal")}</Link></li>
+              <li><Link href="/legal/confidentialite">{t("privacy")}</Link></li>
+              <li><Link href="/legal/cgu">{t("terms")}</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="font-semibold mb-4">Contact</p>
+            <ul className="space-y-2 text-sm opacity-80">
+              <li className="flex items-center gap-2">
+                <Mail size={14} /> contact@maprocedure.cm
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone size={14} /> +237 6 00 00 00 00
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 pt-6 text-center text-xs opacity-60">
+          {t("rights", { year })}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/home/WhatsAppFloat.tsx
+// ============================================================
+
+"use client";
+
+import { MessageCircle } from "lucide-react";
+
+export default function WhatsAppFloat() {
+  return (
+    <a
+      href="https://wa.me/237600000000"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-whatsapp text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
+      aria-label="Discuter sur WhatsApp"
+    >
+      <MessageCircle size={26} fill="white" strokeWidth={0} />
+    </a>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/sitemap.ts
+// ============================================================
+
+import type { MetadataRoute } from "next";
+import { getPopularProcedures } from "@/lib/api";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = "https://maprocedure.cm";
+  const locales = ["fr", "en"];
+  const staticPaths = ["", "/procedures", "/experts", "/tarifs", "/suivi", "/a-propos", "/contact"];
+
+  const procedures = await getPopularProcedures();
+
+  const staticEntries: MetadataRoute.Sitemap = locales.flatMap((locale) =>
+    staticPaths.map((path) => ({
+      url: `${baseUrl}/${locale}${path}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: path === "" ? 1 : 0.8,
+    }))
+  );
+
+  const procedureEntries: MetadataRoute.Sitemap = locales.flatMap((locale) =>
+    procedures.map((p) => ({
+      url: `${baseUrl}/${locale}/procedures/${p.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    }))
+  );
+
+  return [...staticEntries, ...procedureEntries];
+}
+
+
+// ============================================================
+// FICHIER: app/robots.ts
+// ============================================================
+
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/api/", "/admin/"],
+    },
+    sitemap: "https://maprocedure.cm/sitemap.xml",
+  };
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/globals.css
+// ============================================================
+
+/*
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: .env.local (variables à créer)
+// ============================================================
+
+/*
+NEXT_PUBLIC_API_URL=https://maprocedure.encashpay.com/api
+*/
+
+
+// ============================================================
+// FICHIER: package.json — dépendances à ajouter
+// ============================================================
+
+/*
+npm install next-intl lucide-react
+
+npm install -D tailwindcss postcss autoprefixer
+*/

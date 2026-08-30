@@ -1,0 +1,1142 @@
+// ============================================================
+// FICHIER: app/Http/Controllers/Api/TrackingController.php (Laravel — NOUVEAU)
+// Endpoint public minimal : ne retourne QUE le statut et les dates,
+// aucune donnée personnelle (nom, téléphone, documents...).
+// ============================================================
+
+/*
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\ServiceRequest;
+
+class TrackingController extends Controller
+{
+    public function show(string $reference)
+    {
+        $serviceRequest = ServiceRequest::where('reference_code', strtoupper($reference))->first();
+
+        if (!$serviceRequest) {
+            return response()->json(['found' => false], 404);
+        }
+
+        return response()->json([
+            'found' => true,
+            'reference_code' => $serviceRequest->reference_code,
+            'status' => $serviceRequest->status,
+            'procedure_title' => $serviceRequest->procedure->title ?? null,
+            'created_at' => $serviceRequest->created_at,
+            'accepted_at' => $serviceRequest->accepted_at,
+            'completed_at' => $serviceRequest->completed_at,
+        ]);
+    }
+}
+*/
+
+// Dans routes/api.php, ajoute avec les routes publiques :
+// Route::get('/track/{reference}', [TrackingController::class, 'show']);
+
+
+// ============================================================
+// FICHIER: lib/api.ts — AJOUTS
+// ============================================================
+
+/*
+export interface ExpertDetail extends ExpertSummary {
+  bio?: string;
+  services?: string[];
+  photo?: string;
+  status: string;
+}
+
+export interface Review {
+  id: number;
+  score: number;
+  review: string | null;
+  user_name?: string;
+  created_at: string;
+}
+
+export interface TrackingResult {
+  found: boolean;
+  reference_code?: string;
+  status?: string;
+  procedure_title?: string;
+  created_at?: string;
+  accepted_at?: string | null;
+  completed_at?: string | null;
+}
+
+export async function getAllExperts(): Promise<ExpertDetail[]> {
+  return safeFetch<ExpertDetail[]>(`${API_URL}/experts`, []);
+}
+
+export async function getExpertById(id: string): Promise<ExpertDetail | null> {
+  try {
+    const res = await fetch(`${API_URL}/experts/${id}`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    return (await res.json()) as ExpertDetail;
+  } catch {
+    return null;
+  }
+}
+
+export async function getExpertRatings(id: string): Promise<Review[]> {
+  return safeFetch<Review[]>(`${API_URL}/experts/${id}/ratings`, []);
+}
+
+export async function trackServiceRequest(reference: string): Promise<TrackingResult> {
+  try {
+    const res = await fetch(`${API_URL}/track/${reference}`, { cache: "no-store" });
+    return (await res.json()) as TrackingResult;
+  } catch {
+    return { found: false };
+  }
+}
+
+export async function getAppConfig(): Promise<{ consultation_price?: number }> {
+  return safeFetch(`${API_URL}/config`, {});
+}
+*/
+
+
+// ============================================================
+// FICHIER: messages/fr.json — AJOUTS
+// ============================================================
+
+/*
+{
+  "expertsList": {
+    "title": "Nos experts certifiés",
+    "subtitle": "Des professionnels vérifiés pour vous accompagner dans vos démarches administratives.",
+    "activeExperts": "experts actifs",
+    "allSpecialties": "Tout",
+    "verified": "Vérifié",
+    "casesHandled": "Dossiers traités",
+    "loadMore": "Afficher plus d'experts"
+  },
+  "expertProfile": {
+    "verifiedBadge": "Expert Vérifié",
+    "indicativeRate": "Tarif indicatif",
+    "responseTime": "Délai moyen de réponse",
+    "contactCta": "Contacter via WhatsApp",
+    "basedOnReviews": "Basé sur {count} avis",
+    "aboutTitle": "À propos de l'expert",
+    "practicalInfoTitle": "Informations pratiques",
+    "location": "Localisation",
+    "languages": "Langues",
+    "availability": "Disponibilités",
+    "securePayment": "Paiement Sécurisé",
+    "securePaymentDesc": "Ma Procédure garantit la sécurité de vos transactions avec l'expert.",
+    "reviewsTitle": "Avis des clients",
+    "seeAllReviews": "Voir tous les avis",
+    "notFound": "Expert introuvable"
+  },
+  "pricing": {
+    "badge": "Transparence des coûts",
+    "title": "Accédez à l'excellence administrative sans compromis.",
+    "subtitle": "Nous démocratisons l'accès aux services publics au Cameroun. Notre Niveau 1 (Assistant IA) est entièrement gratuit et illimité.",
+    "ctaPricing": "Explorer les tarifs",
+    "ctaFree": "Consulter l'IA (Gratuit)",
+    "tier1Title": "Niveau 1 : IA Gratuite",
+    "tier1Subtitle": "Accès immédiat à toutes les fiches de procédures et aide conversationnelle 24/7.",
+    "tier1Price": "0 FCFA",
+    "tier1Point1": "Recherche de procédures",
+    "tier1Point2": "Listes des pièces à fournir",
+    "tier1Point3": "Assistant IA conversationnel",
+    "tier1Cta": "Démarrer maintenant",
+    "tier2Title": "Consultation Directe",
+    "tier2Badge": "Populaire",
+    "tier2Subtitle": "Échangez avec un expert pour valider votre dossier.",
+    "tier2_15min": "15 Minutes",
+    "tier2_30min": "30 Minutes",
+    "tier2_45min": "45 Minutes",
+    "tier3Title": "Délégation Complète",
+    "tier3Subtitle": "Nous gérons tout, du dépôt à la délivrance de l'acte. Une sérénité absolue pour vos dossiers complexes.",
+    "tier3PriceLabel": "À partir de",
+    "tier3Point1": "Prise en charge intégrale",
+    "tier3Point2": "Suivi temps réel par SMS/WhatsApp",
+    "tier3Point3": "Garantie de conformité légale",
+    "tier3Cta": "Demander un Devis",
+    "tier3Note": "Note sur la tarification : Les tarifs affichés pour la délégation complète sont indicatifs. Le prix final varie selon la complexité du dossier, le type de procédure et les délais souhaités. Un devis définitif vous sera toujours soumis avant tout paiement.",
+    "faqTitle": "Foire aux questions sur les paiements",
+    "faq1Q": "Comment puis-je payer ?",
+    "faq1A": "Nous acceptons les paiements via Mobile Money (MoMo) et Orange Money. Les transactions sont sécurisées et confirmées instantanément.",
+    "faq2Q": "Est-ce sécurisé ?",
+    "faq2A": "Absolument. Nous utilisons des passerelles de paiement certifiées. Aucun numéro de code secret ne sera jamais demandé en dehors de la plateforme officielle.",
+    "faq3Q": "Puis-je être remboursé ?",
+    "faq3A": "En cas de non-faisabilité de votre dossier après étude initiale, nous procédons au remboursement intégral de vos frais de service (hors frais opérateurs).",
+    "finalCtaTitle": "Prêt à simplifier vos démarches ?",
+    "finalCtaSubtitle": "Contactez-nous directement pour confirmer votre besoin et finaliser votre paiement sécurisé.",
+    "finalCta": "Confirmer par WhatsApp",
+    "finalCtaNote": "Réponse moyenne en moins de 10 minutes"
+  },
+  "assistant": {
+    "badge": "Disponible 24h/24 & 7j/7",
+    "title": "Votre assistant administratif 24/7 sur WhatsApp",
+    "subtitle": "Simplifiez vos démarches administratives au Cameroun. Posez vos questions, obtenez des conseils d'experts ou déléguez vos dossiers depuis votre messagerie favorite.",
+    "ctaPrimary": "Démarrer sur WhatsApp",
+    "ctaSecondary": "En savoir plus",
+    "levelsTitle": "Trois niveaux de service pour tous vos besoins",
+    "levelsSubtitle": "Choisissez l'accompagnement qui correspond à votre situation administrative.",
+    "level1Title": "Niveau 1",
+    "level1Name": "Assistant IA Gratuit",
+    "level1Desc": "Idéal pour obtenir des informations rapides sur les procédures et documents requis.",
+    "level1Point1": "Réponses instantanées 24/7",
+    "level1Point2": "Listes de documents officiels",
+    "level1Point3": "Guide de localisation des bureaux",
+    "level1Cta": "Essayer gratuitement",
+    "level2Title": "Niveau 2",
+    "level2Badge": "Populaire",
+    "level2Name": "Conseil Expert Payant",
+    "level2Desc": "Pour les cas complexes nécessitant l'expertise d'un consultant administratif dédié.",
+    "level2Point1": "Analyse personnalisée de votre cas",
+    "level2Point2": "Vérification de la validité des pièces",
+    "level2Point3": "Appel de conseil de 15 min",
+    "level2Cta": "Consulter un Expert",
+    "level3Title": "Niveau 3",
+    "level3Name": "Délégation Complète Payante",
+    "level3Desc": "Tranquillité totale : nous nous occupons de tout, du dépôt au retrait de vos documents.",
+    "level3Point1": "Prise en charge totale du dossier",
+    "level3Point2": "Suivi en temps réel par notification",
+    "level3Point3": "Livraison sécurisée à domicile",
+    "level3Cta": "Nous confier le dossier",
+    "howTitle": "Comment ça marche ?",
+    "howSubtitle": "En seulement 4 étapes, résolvez votre problématique administrative sans quitter votre canapé.",
+    "step1Title": "Cliquez",
+    "step1Desc": "Appuyez sur le bouton WhatsApp pour ouvrir la conversation.",
+    "step2Title": "Expliquez",
+    "step2Desc": "Envoyez votre question ou le nom de la procédure souhaitée.",
+    "step3Title": "Choisissez",
+    "step3Desc": "L'IA vous répond ou vous oriente vers un expert humain.",
+    "step4Title": "Validez",
+    "step4Desc": "Finalisez votre demande et recevez vos documents.",
+    "secureTitle": "Données Sécurisées",
+    "secureDesc": "Vos documents et informations personnelles sont protégés par un chiffrement de bout en bout et des protocoles de confidentialité stricts.",
+    "coverageTitle": "Partout au Cameroun",
+    "coverageDesc": "Couverture nationale pour toutes vos démarches à Yaoundé, Douala, dans les 10 régions.",
+    "paymentBadge": "OM & MoMo Acceptés",
+    "timeBadge": "Gain de temps : -70%",
+    "usersBadge": "5,000+ Utilisateurs",
+    "simplicityBadge": "Simplicité sans précédent",
+    "finalTitle": "Prêt à simplifier votre vie ?",
+    "finalSubtitle": "L'administration ne devrait pas être un fardeau. Rejoignez les milliers de camerounais qui utilisent Ma Procédure chaque jour.",
+    "finalCta": "Démarrer une conversation WhatsApp",
+    "finalNote": "Service officiel et sécurisé"
+  },
+  "tracking": {
+    "title": "Suivez votre dossier",
+    "subtitle": "Entrez votre numéro de référence pour consulter l'avancement de votre procédure administrative en temps réel.",
+    "placeholder": "ex: MP-2026-000154",
+    "cta": "Rechercher",
+    "notFoundTitle": "Dossier introuvable",
+    "notFoundText": "Vérifiez le numéro saisi ou contactez-nous sur WhatsApp pour assistance.",
+    "statusPending": "Nouveau",
+    "statusAccepted": "Assigné à un expert",
+    "statusInProgress": "En traitement",
+    "statusCompleted": "Terminé",
+    "statusCancelled": "Annulé",
+    "procedureLabel": "Procédure",
+    "createdAt": "Créé le",
+    "helpText": "Besoin d'aide avec votre dossier ?"
+  }
+}
+*/
+
+
+// ============================================================
+// FICHIER: messages/en.json — AJOUTS (mêmes clés, adapte le texte en anglais)
+// ============================================================
+
+/*
+Structure identique à fr.json ci-dessus, traduite en anglais.
+Exemple des clés les plus visibles :
+
+"pricing": {
+  "title": "Access administrative excellence without compromise.",
+  "tier1Price": "0 XAF",
+  "tier3PriceLabel": "Starting from",
+  ...
+},
+"assistant": {
+  "title": "Your 24/7 administrative assistant on WhatsApp",
+  ...
+},
+"tracking": {
+  "title": "Track your case",
+  "placeholder": "e.g. MP-2026-000154",
+  ...
+}
+*/
+
+
+// ============================================================
+// FICHIER: components/experts/ExpertCard.tsx
+// ============================================================
+
+import { Link } from "@/i18n/navigation";
+import { Star, BadgeCheck } from "lucide-react";
+import Image from "next/image";
+import type { ExpertDetail } from "@/lib/api";
+
+export function ExpertCard({ expert }: { expert: ExpertDetail }) {
+  return (
+    <Link
+      href={`/experts/${expert.id}`}
+      className="block bg-surface-container-lowest border border-outline-variant rounded-xl p-6 text-center hover:shadow-card hover:border-primary/40 transition-all"
+    >
+      <div className="relative w-20 h-20 rounded-full mx-auto mb-4 overflow-hidden bg-primary-container/20">
+        {expert.photo && (
+          <Image src={expert.photo} alt={expert.user?.name ?? expert.company_name} fill className="object-cover" />
+        )}
+      </div>
+      <p className="font-bold text-on-surface">{expert.user?.name ?? expert.company_name}</p>
+      <p className="text-sm text-primary mb-2">{expert.services?.[0] ?? expert.company_name}</p>
+
+      <div className="flex items-center justify-center gap-1 mb-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            size={13}
+            className={i < Math.round(expert.rating ?? 0) ? "fill-secondary-container text-secondary-container" : "text-outline-variant"}
+          />
+        ))}
+        <span className="text-xs text-on-surface-variant ml-1">({expert.rating?.toFixed(1) ?? "—"})</span>
+      </div>
+
+      <div className="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant">
+        <span>{expert.completed_orders} dossiers</span>
+        {expert.status === "approved" && (
+          <span className="inline-flex items-center gap-1 text-primary font-medium">
+            <BadgeCheck size={14} /> Vérifié
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/experts/page.tsx
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { getAllExperts } from "@/lib/api";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import ExpertsListClient from "@/components/experts/ExpertsListClient";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "expertsList" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("subtitle"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/experts`,
+      languages: { fr: `${baseUrl}/fr/experts`, en: `${baseUrl}/en/experts` },
+    },
+  };
+}
+
+export default async function ExpertsPage() {
+  const experts = await getAllExperts();
+
+  return (
+    <>
+      <Header />
+      <ExpertsListClient experts={experts} />
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/experts/ExpertsListClient.tsx
+// ============================================================
+
+"use client";
+
+import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { ExpertCard } from "./ExpertCard";
+import type { ExpertDetail } from "@/lib/api";
+
+export default function ExpertsListClient({ experts }: { experts: ExpertDetail[] }) {
+  const t = useTranslations("expertsList");
+  const [specialty, setSpecialty] = useState<string | null>(null);
+
+  const specialties = useMemo(() => {
+    const all = experts.flatMap((e) => e.services ?? []);
+    return Array.from(new Set(all)).slice(0, 6);
+  }, [experts]);
+
+  const filtered = specialty
+    ? experts.filter((e) => e.services?.includes(specialty))
+    : experts;
+
+  return (
+    <main className="max-w-container mx-auto px-4 md:px-8 py-10">
+      <div className="max-w-xl mx-auto text-center mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-3">{t("title")}</h1>
+        <p className="text-on-surface-variant">{t("subtitle")}</p>
+      </div>
+
+      <div className="bg-primary-container/10 rounded-xl p-5 text-center max-w-xs mx-auto mb-8">
+        <p className="text-3xl font-bold text-primary">{experts.length}</p>
+        <p className="text-sm text-on-surface-variant">{t("activeExperts")}</p>
+      </div>
+
+      {specialties.length > 0 && (
+        <div className="flex gap-2 justify-center flex-wrap mb-10">
+          <button
+            onClick={() => setSpecialty(null)}
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+              specialty === null ? "bg-primary text-on-primary border-primary" : "border-outline-variant hover:border-primary"
+            }`}
+          >
+            {t("allSpecialties")}
+          </button>
+          {specialties.map((s) => (
+            <button
+              key={s}
+              onClick={() => setSpecialty(s)}
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                specialty === s ? "bg-primary text-on-primary border-primary" : "border-outline-variant hover:border-primary"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {filtered.map((expert) => (
+          <ExpertCard key={expert.id} expert={expert} />
+        ))}
+      </div>
+    </main>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/experts/[id]/page.tsx
+// ============================================================
+
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { getExpertById, getExpertRatings } from "@/lib/api";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import Image from "next/image";
+import { BadgeCheck, Star, ShieldCheck } from "lucide-react";
+
+export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const expert = await getExpertById(id);
+
+  if (!expert) return { title: "Expert introuvable" };
+
+  return {
+    title: `${expert.user?.name ?? expert.company_name} — Expert certifié Ma Procédure`,
+    description: expert.bio?.slice(0, 155) ?? `Profil de ${expert.company_name}, expert vérifié sur Ma Procédure.`,
+  };
+}
+
+export default async function ExpertProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const [expert, reviews] = await Promise.all([getExpertById(id), getExpertRatings(id)]);
+
+  if (!expert) notFound();
+
+  const t = await getTranslations("expertProfile");
+
+  const distribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = reviews.filter((r) => r.score === star).length;
+    return { star, percent: reviews.length ? Math.round((count / reviews.length) * 100) : 0 };
+  });
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-2xl mx-auto px-4 md:px-8 py-10">
+        <div className="text-center mb-8">
+          <div className="relative w-28 h-28 rounded-full mx-auto mb-4 overflow-hidden bg-primary-container/20">
+            {expert.photo && <Image src={expert.photo} alt="" fill className="object-cover" />}
+          </div>
+          {expert.status === "approved" && (
+            <span className="inline-flex items-center gap-1 bg-primary-container/15 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-3">
+              <BadgeCheck size={14} /> {t("verifiedBadge")}
+            </span>
+          )}
+          <h1 className="text-2xl font-bold text-on-surface">{expert.user?.name ?? expert.company_name}</h1>
+          <p className="text-on-surface-variant">{expert.services?.[0] ?? expert.company_name}</p>
+        </div>
+
+        {expert.bio && (
+          <section className="mb-8">
+            <h2 className="font-bold text-on-surface mb-2">{t("aboutTitle")}</h2>
+            <p className="text-on-surface-variant leading-relaxed">{expert.bio}</p>
+          </section>
+        )}
+
+        {expert.services && expert.services.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {expert.services.map((s) => (
+              <span key={s} className="bg-surface-container-low text-on-surface-variant text-sm px-3 py-1.5 rounded-full">
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <div className="bg-surface-container-low rounded-xl p-4">
+            <p className="text-xs text-on-surface-variant mb-1">{t("indicativeRate")}</p>
+            <p className="font-bold text-on-surface">
+              {expert.commission_rate ? `${expert.commission_rate}%` : "—"}
+            </p>
+          </div>
+          <div className="bg-surface-container-low rounded-xl p-4">
+            <p className="text-xs text-on-surface-variant mb-1">{t("responseTime")}</p>
+            <p className="font-bold text-on-surface">~2h</p>
+          </div>
+        </div>
+
+        <section className="flex flex-wrap items-start gap-8 mb-8">
+          <div>
+            <p className="text-4xl font-black text-on-surface">{expert.rating?.toFixed(1) ?? "—"}</p>
+            <div className="flex gap-0.5 my-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={16}
+                  className={i < Math.round(expert.rating ?? 0) ? "fill-secondary-container text-secondary-container" : "text-outline-variant"}
+                />
+              ))}
+            </div>
+            <p className="text-sm text-on-surface-variant">{t("basedOnReviews", { count: reviews.length })}</p>
+          </div>
+
+          <div className="flex-1 min-w-[180px] space-y-1.5">
+            {distribution.map(({ star, percent }) => (
+              <div key={star} className="flex items-center gap-2 text-xs">
+                <span className="w-2">{star}</span>
+                <div className="flex-1 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${percent}%` }} />
+                </div>
+                <span className="w-8 text-right text-on-surface-variant">{percent}%</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="bg-primary-container/10 rounded-xl p-4 flex items-center gap-3 mb-8">
+          <ShieldCheck size={20} className="text-primary flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-sm text-on-surface">{t("securePayment")}</p>
+            <p className="text-xs text-on-surface-variant">{t("securePaymentDesc")}</p>
+          </div>
+        </div>
+
+        {reviews.length > 0 && (
+          <section>
+            <h2 className="font-bold text-on-surface mb-4">{t("reviewsTitle")}</h2>
+            <div className="space-y-4">
+              {reviews.slice(0, 3).map((review) => (
+                <div key={review.id} className="border-b border-outline-variant pb-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-xs font-bold text-primary">
+                      {review.user_name?.[0] ?? "?"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-on-surface">{review.user_name ?? "Utilisateur"}</p>
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} size={11} className={i < review.score ? "fill-secondary-container text-secondary-container" : "text-outline-variant"} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {review.review && <p className="text-sm text-on-surface-variant italic">"{review.review}"</p>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <div className="sticky bottom-0 bg-surface-container-lowest border-t border-outline-variant p-4">
+        <a
+          href="https://wa.me/237600000000"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="max-w-2xl mx-auto flex items-center justify-center gap-2 bg-primary text-on-primary font-semibold py-3.5 rounded-lg"
+        >
+          {t("contactCta")}
+        </a>
+      </div>
+
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/tarifs/page.tsx
+// Contenu essentiellement statique/traduit — le prix de consultation
+// vient de ton endpoint /config existant pour rester cohérent avec
+// ce qui est réellement facturé sur WhatsApp.
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { getAppConfig } from "@/lib/api";
+import { Link } from "@/i18n/navigation";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import { Check, Info } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "pricing" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("subtitle"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/tarifs`,
+      languages: { fr: `${baseUrl}/fr/tarifs`, en: `${baseUrl}/en/tarifs` },
+    },
+  };
+}
+
+export default async function PricingPage() {
+  const t = await getTranslations("pricing");
+  const config = await getAppConfig();
+  const consultationPrice = config.consultation_price ?? 5000;
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-3xl mx-auto px-4 md:px-8 py-12">
+        <div className="text-center mb-12">
+          <span className="inline-block bg-secondary-container text-on-secondary-container text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+            {t("badge")}
+          </span>
+          <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-4 text-balance">{t("title")}</h1>
+          <p className="text-on-surface-variant max-w-xl mx-auto">{t("subtitle")}</p>
+        </div>
+
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-8 mb-6">
+          <p className="font-bold text-on-surface mb-1">{t("tier1Title")}</p>
+          <p className="text-sm text-on-surface-variant mb-4">{t("tier1Subtitle")}</p>
+          <p className="text-4xl font-black text-primary mb-4">{t("tier1Price")}</p>
+          <ul className="space-y-2 mb-6">
+            {[t("tier1Point1"), t("tier1Point2"), t("tier1Point3")].map((p) => (
+              <li key={p} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                <Check size={16} className="text-primary" /> {p}
+              </li>
+            ))}
+          </ul>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center bg-primary text-on-primary font-semibold py-3 rounded-lg hover:bg-primary-container transition-colors"
+          >
+            {t("tier1Cta")}
+          </a>
+        </div>
+
+        <div className="bg-surface-container-lowest border-2 border-primary rounded-2xl p-8 mb-6 relative">
+          <span className="absolute -top-3 left-8 bg-primary text-on-primary text-xs font-bold px-3 py-1 rounded-full">
+            {t("tier2Badge")}
+          </span>
+          <p className="font-bold text-on-surface mb-1">{t("tier2Title")}</p>
+          <p className="text-sm text-on-surface-variant mb-5">{t("tier2Subtitle")}</p>
+          <div className="space-y-3 mb-6">
+            {[
+              { label: t("tier2_15min"), price: consultationPrice },
+              { label: t("tier2_30min"), price: Math.round(consultationPrice * 1.6) },
+              { label: t("tier2_45min"), price: Math.round(consultationPrice * 2.4) },
+            ].map((tier) => (
+              <div key={tier.label} className="flex items-center justify-between bg-surface-container-low rounded-lg px-4 py-3">
+                <span className="text-sm font-medium text-on-surface">{tier.label}</span>
+                <span className="font-bold text-primary">{tier.price.toLocaleString("fr-FR")} FCFA</span>
+              </div>
+            ))}
+          </div>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center bg-primary text-on-primary font-semibold py-3 rounded-lg hover:bg-primary-container transition-colors"
+          >
+            {t("finalCta")}
+          </a>
+        </div>
+
+        <div className="bg-primary text-on-primary rounded-2xl p-8 mb-4">
+          <p className="font-bold mb-1">{t("tier3Title")}</p>
+          <p className="text-sm opacity-90 mb-5">{t("tier3Subtitle")}</p>
+          <p className="text-xs opacity-75">{t("tier3PriceLabel")}</p>
+          <p className="text-4xl font-black mb-4">25 000 <span className="text-lg">FCFA</span></p>
+          <ul className="space-y-2 mb-6">
+            {[t("tier3Point1"), t("tier3Point2"), t("tier3Point3")].map((p) => (
+              <li key={p} className="flex items-center gap-2 text-sm opacity-90">
+                <Check size={16} /> {p}
+              </li>
+            ))}
+          </ul>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center bg-on-primary text-primary font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity"
+          >
+            {t("tier3Cta")}
+          </a>
+        </div>
+
+        <div className="flex gap-3 bg-secondary-container/20 rounded-xl p-4 mb-12">
+          <Info size={18} className="text-secondary flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-on-surface-variant leading-relaxed">{t("tier3Note")}</p>
+        </div>
+
+        <h2 className="text-xl font-bold text-on-surface mb-4">{t("faqTitle")}</h2>
+        <div className="space-y-2 mb-12">
+          {[
+            { q: t("faq1Q"), a: t("faq1A") },
+            { q: t("faq2Q"), a: t("faq2A") },
+            { q: t("faq3Q"), a: t("faq3A") },
+          ].map((item) => (
+            <details key={item.q} className="group bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+              <summary className="font-medium text-on-surface cursor-pointer list-none flex justify-between">
+                {item.q}
+                <span className="text-primary group-open:rotate-45 transition-transform">+</span>
+              </summary>
+              <p className="text-sm text-on-surface-variant mt-3">{item.a}</p>
+            </details>
+          ))}
+        </div>
+
+        <div className="text-center bg-surface-container-low rounded-2xl p-8">
+          <h2 className="text-xl font-bold text-on-surface mb-2">{t("finalCtaTitle")}</h2>
+          <p className="text-on-surface-variant text-sm mb-5">{t("finalCtaSubtitle")}</p>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-primary text-on-primary font-semibold px-6 py-3 rounded-lg hover:bg-primary-container transition-colors mb-2"
+          >
+            {t("finalCta")}
+          </a>
+          <p className="text-xs text-on-surface-variant">{t("finalCtaNote")}</p>
+        </div>
+      </main>
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/assistant/page.tsx
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import { MessageCircle, Sparkles, UserCheck, Briefcase, ShieldCheck, MapPin, Check } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "assistant" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("subtitle"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/assistant`,
+      languages: { fr: `${baseUrl}/fr/assistant`, en: `${baseUrl}/en/assistant` },
+    },
+  };
+}
+
+export default async function AssistantPage() {
+  const t = await getTranslations("assistant");
+
+  const levels = [
+    {
+      icon: Sparkles,
+      title: t("level1Title"),
+      name: t("level1Name"),
+      desc: t("level1Desc"),
+      points: [t("level1Point1"), t("level1Point2"), t("level1Point3")],
+      cta: t("level1Cta"),
+      badge: null,
+    },
+    {
+      icon: UserCheck,
+      title: t("level2Title"),
+      name: t("level2Name"),
+      desc: t("level2Desc"),
+      points: [t("level2Point1"), t("level2Point2"), t("level2Point3")],
+      cta: t("level2Cta"),
+      badge: t("level2Badge"),
+    },
+    {
+      icon: Briefcase,
+      title: t("level3Title"),
+      name: t("level3Name"),
+      desc: t("level3Desc"),
+      points: [t("level3Point1"), t("level3Point2"), t("level3Point3")],
+      cta: t("level3Cta"),
+      badge: null,
+    },
+  ];
+
+  const steps = [
+    { title: t("step1Title"), desc: t("step1Desc") },
+    { title: t("step2Title"), desc: t("step2Desc") },
+    { title: t("step3Title"), desc: t("step3Desc") },
+    { title: t("step4Title"), desc: t("step4Desc") },
+  ];
+
+  return (
+    <>
+      <Header />
+      <main>
+        <section className="max-w-2xl mx-auto px-4 pt-12 pb-16 text-center">
+          <span className="inline-block bg-secondary-container text-on-secondary-container text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+            {t("badge")}
+          </span>
+          <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-5 text-balance">{t("title")}</h1>
+          <p className="text-on-surface-variant mb-8">{t("subtitle")}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="https://wa.me/237600000000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-on-primary font-semibold px-6 py-3.5 rounded-lg hover:bg-primary-container transition-colors"
+            >
+              <MessageCircle size={18} /> {t("ctaPrimary")}
+            </a>
+          </div>
+        </section>
+
+        <section className="max-w-container mx-auto px-4 md:px-8 py-16 bg-surface-container-low rounded-3xl">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-on-surface mb-3">{t("levelsTitle")}</h2>
+            <p className="text-on-surface-variant">{t("levelsSubtitle")}</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {levels.map(({ icon: Icon, title, name, desc, points, cta, badge }) => (
+              <div key={name} className="relative bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
+                {badge && (
+                  <span className="absolute -top-3 left-6 bg-primary text-on-primary text-xs font-bold px-3 py-1 rounded-full">
+                    {badge}
+                  </span>
+                )}
+                <div className="w-11 h-11 rounded-lg bg-primary-container/15 flex items-center justify-center mb-4">
+                  <Icon size={20} className="text-primary" />
+                </div>
+                <p className="text-xs font-semibold text-on-surface-variant mb-1">{title}</p>
+                <p className="font-bold text-on-surface mb-2">{name}</p>
+                <p className="text-sm text-on-surface-variant mb-4">{desc}</p>
+                <ul className="space-y-2 mb-6">
+                  {points.map((p) => (
+                    <li key={p} className="flex items-center gap-2 text-xs text-on-surface-variant">
+                      <Check size={14} className="text-primary flex-shrink-0" /> {p}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="https://wa.me/237600000000"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center bg-primary text-on-primary font-semibold py-2.5 rounded-lg text-sm hover:bg-primary-container transition-colors"
+                >
+                  {cta}
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="max-w-container mx-auto px-4 md:px-8 py-16">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-on-surface mb-3">{t("howTitle")}</h2>
+            <p className="text-on-surface-variant">{t("howSubtitle")}</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {steps.map((step, i) => (
+              <div key={step.title} className="text-center">
+                <div className="w-10 h-10 rounded-full bg-primary text-on-primary font-bold flex items-center justify-center mx-auto mb-3">
+                  {i + 1}
+                </div>
+                <p className="font-semibold text-on-surface mb-1">{step.title}</p>
+                <p className="text-sm text-on-surface-variant">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="max-w-container mx-auto px-4 md:px-8 pb-16 grid sm:grid-cols-2 gap-4">
+          <div className="bg-surface-container-low rounded-xl p-6 flex items-start gap-3">
+            <ShieldCheck size={22} className="text-primary flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-on-surface mb-1">{t("secureTitle")}</p>
+              <p className="text-sm text-on-surface-variant">{t("secureDesc")}</p>
+            </div>
+          </div>
+          <div className="bg-surface-container-low rounded-xl p-6 flex items-start gap-3">
+            <MapPin size={22} className="text-primary flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-on-surface mb-1">{t("coverageTitle")}</p>
+              <p className="text-sm text-on-surface-variant">{t("coverageDesc")}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-primary text-on-primary py-16 text-center px-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">{t("finalTitle")}</h2>
+          <p className="opacity-90 max-w-lg mx-auto mb-8">{t("finalSubtitle")}</p>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-on-primary text-primary font-semibold px-6 py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-3"
+          >
+            <MessageCircle size={18} /> {t("finalCta")}
+          </a>
+          <p className="text-xs opacity-75">✓ {t("finalNote")}</p>
+        </section>
+      </main>
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: app/[locale]/suivi/page.tsx
+// ============================================================
+
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import TrackingForm from "@/components/tracking/TrackingForm";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "tracking" });
+  const baseUrl = "https://maprocedure.cm";
+
+  return {
+    title: t("title"),
+    description: t("subtitle"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/suivi`,
+      languages: { fr: `${baseUrl}/fr/suivi`, en: `${baseUrl}/en/suivi` },
+    },
+  };
+}
+
+export default function TrackingPage() {
+  return (
+    <>
+      <Header />
+      <TrackingForm />
+      <Footer />
+      <WhatsAppFloat />
+    </>
+  );
+}
+
+
+// ============================================================
+// FICHIER: components/tracking/TrackingForm.tsx
+// Timeline verticale de statut — aucune donnée sensible affichée
+// (conforme au design de l'endpoint backend TrackingController).
+// ============================================================
+
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { trackServiceRequest, type TrackingResult } from "@/lib/api";
+import { Search, Circle, CheckCircle2, Clock, XCircle, MessageCircle } from "lucide-react";
+
+const STATUS_ORDER = ["pending", "accepted", "in_progress", "completed"];
+
+export default function TrackingForm() {
+  const t = useTranslations("tracking");
+  const [reference, setReference] = useState("");
+  const [result, setResult] = useState<TrackingResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reference.trim()) return;
+    setLoading(true);
+    setSearched(true);
+    const res = await trackServiceRequest(reference.trim());
+    setResult(res);
+    setLoading(false);
+  };
+
+  const statusLabel = (status?: string) => {
+    switch (status) {
+      case "pending": return t("statusPending");
+      case "accepted": return t("statusAccepted");
+      case "in_progress": return t("statusInProgress");
+      case "completed": return t("statusCompleted");
+      case "cancelled": return t("statusCancelled");
+      default: return status ?? "";
+    }
+  };
+
+  const currentIndex = result?.status ? STATUS_ORDER.indexOf(result.status) : -1;
+
+  return (
+    <main className="max-w-lg mx-auto px-4 py-16">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-on-surface mb-3">{t("title")}</h1>
+        <p className="text-on-surface-variant">{t("subtitle")}</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 mb-8">
+        <label className="block text-sm font-medium text-on-surface mb-2">
+          {t("title") === "Suivez votre dossier" ? "Numéro de dossier" : "Case number"}
+        </label>
+        <div className="relative mb-4">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
+          <input
+            type="text"
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            placeholder={t("placeholder")}
+            className="w-full pl-11 pr-4 py-3.5 rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-primary text-on-primary font-semibold py-3 rounded-lg hover:bg-primary-container transition-colors disabled:opacity-60"
+        >
+          {loading ? "..." : t("cta")}
+        </button>
+      </form>
+
+      {searched && !loading && result && !result.found && (
+        <div className="text-center bg-error-container/40 rounded-xl p-6">
+          <XCircle size={32} className="text-error mx-auto mb-3" />
+          <p className="font-semibold text-on-surface mb-1">{t("notFoundTitle")}</p>
+          <p className="text-sm text-on-surface-variant mb-4">{t("notFoundText")}</p>
+          <a
+            href="https://wa.me/237600000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-primary font-semibold text-sm"
+          >
+            <MessageCircle size={16} /> {t("helpText")}
+          </a>
+        </div>
+      )}
+
+      {result?.found && (
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6">
+          <p className="text-xs text-on-surface-variant mb-1">{t("procedureLabel")}</p>
+          <p className="font-bold text-on-surface mb-6">{result.procedure_title ?? "—"}</p>
+
+          <div className="space-y-1">
+            {STATUS_ORDER.map((status, i) => {
+              const isDone = result.status === "cancelled" ? false : i <= currentIndex;
+              const isCurrent = status === result.status;
+
+              return (
+                <div key={status} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    {isDone ? (
+                      <CheckCircle2 size={22} className={isCurrent ? "text-primary" : "text-primary/60"} />
+                    ) : (
+                      <Circle size={22} className="text-outline-variant" />
+                    )}
+                    {status !== "completed" && (
+                      <div className={`w-0.5 h-8 ${isDone ? "bg-primary/60" : "bg-outline-variant"}`} />
+                    )}
+                  </div>
+                  <div className="pb-8">
+                    <p className={`text-sm font-medium ${isDone ? "text-on-surface" : "text-on-surface-variant"}`}>
+                      {statusLabel(status)}
+                    </p>
+                    {isCurrent && (
+                      <p className="text-xs text-primary flex items-center gap-1 mt-0.5">
+                        <Clock size={11} /> Statut actuel
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
