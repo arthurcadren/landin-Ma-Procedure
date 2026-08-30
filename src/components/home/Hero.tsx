@@ -55,7 +55,7 @@ export default function Hero({
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
               <Image
-                src="/hero-illustration.jpg"
+                src="/logo.png"
                 alt=""
                 fill
                 priority

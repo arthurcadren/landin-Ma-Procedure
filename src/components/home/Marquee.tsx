@@ -11,7 +11,12 @@ export function Marquee({
   reverse?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
+    <div
+      className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
+      style={{
+        // styles keyframes are defined globally to avoid hydration diff caused by inline JSX style injection
+      }}
+    >
       <div
         className="flex gap-4 w-max hover:[animation-play-state:paused] motion-reduce:animate-none"
         style={{
@@ -21,17 +26,6 @@ export function Marquee({
         {children}
         {children /* dupliqué pour une boucle parfaitement continue */}
       </div>
-
-      <style jsx>{`
-        @keyframes marquee {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-        @keyframes marquee-reverse {
-          from { transform: translateX(-50%); }
-          to { transform: translateX(0); }
-        }
-      `}</style>
     </div>
   );
 }

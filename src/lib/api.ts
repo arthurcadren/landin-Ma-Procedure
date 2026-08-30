@@ -149,6 +149,7 @@ export async function getRelatedProcedures(categoryId: number, excludeSlug: stri
 
 
 export interface ExpertDetail extends ExpertSummary {
+  commission_rate: any;
   bio?: string;
   services?: string[];
   photo?: string;

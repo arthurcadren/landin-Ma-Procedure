@@ -145,7 +145,7 @@ export default async function ExpertProfilePage({
                       </div>
                     </div>
                   </div>
-                  {review.review && <p className="text-sm text-on-surface-variant italic">"{review.review}"</p>}
+                  {review.review && <p className="text-sm text-on-surface-variant italic">&quot;{review.review}&quot;</p>}
                 </div>
               ))}
             </div>
