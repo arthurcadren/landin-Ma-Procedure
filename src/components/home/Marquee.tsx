@@ -1,4 +1,3 @@
-
 "use client";
 
 export function Marquee({
@@ -11,20 +10,13 @@ export function Marquee({
   reverse?: boolean;
 }) {
   return (
-    <div
-      className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
-      style={{
-        // styles keyframes are defined globally to avoid hydration diff caused by inline JSX style injection
-      }}
-    >
+    <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
       <div
-        className="flex gap-4 w-max hover:[animation-play-state:paused] motion-reduce:animate-none"
-        style={{
-          animation: `${reverse ? "marquee-reverse" : "marquee"} ${speedSeconds}s linear infinite`,
-        }}
+        className={`flex gap-3 w-max ${reverse ? "animate-marquee-rtl" : "animate-marquee-ltr"}`}
+        style={{ animationDuration: `${speedSeconds}s` }}
       >
         {children}
-        {children /* dupliqué pour une boucle parfaitement continue */}
+        {children}
       </div>
     </div>
   );

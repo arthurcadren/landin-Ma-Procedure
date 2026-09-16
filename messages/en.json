@@ -14,9 +14,33 @@
   },
   "hero": {
     "badge": "Administration made simple",
-    "title": "Complete your procedures in Cameroon in one click.",
-    "subtitle": "Access detailed guides, talk to certified experts and save time on your administrative and legal paperwork.",
+    "agentName": "Lexi",
+    "agentSubtitle": "Your personal administrative assistant on WhatsApp",
+    "agentCta": "Learn more",
     "ctaPrimary": "Browse a procedure",
+    
+  "rotating": [
+    {
+      "title": "Complete your procedures in Cameroon in one click.",
+      "subtitle": "Access detailed guides, talk to certified experts and save time on your administrative and legal paperwork."
+    },
+    {
+      "title": "Stop wasting time in long queues.",
+      "subtitle": "Every Cameroonian administrative procedure explained step by step, with the exact documents you need to prepare."
+    },
+    {
+      "title": "A verified expert just one click away.",
+      "subtitle": "Ask our AI assistant anything, 24/7, or hand your case over to a certified professional via WhatsApp."
+    },
+    {
+      "title": "Track your case in real time.",
+      "subtitle": "Get a case number and follow every step of your procedure until it's fully completed."
+    },
+    {
+      "title": "From ID cards to land titles, we know the way.",
+      "subtitle": "Over 150 administrative and semi-administrative procedures documented and regularly updated."
+    }
+  ],
     "ctaSecondary": "Chat on WhatsApp",
     "stat1Value": "150+",
     "stat1Label": "Listed procedures",

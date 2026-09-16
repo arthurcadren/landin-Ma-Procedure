@@ -72,17 +72,6 @@ export async function getPlatformStats(): Promise<{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 export interface ProcedureStep {
   id: number;
   title: string;
@@ -149,7 +138,7 @@ export async function getRelatedProcedures(categoryId: number, excludeSlug: stri
 
 
 export interface ExpertDetail extends ExpertSummary {
-  commission_rate: any;
+  commission_rate: unknown;
   bio?: string;
   services?: string[];
   photo?: string;

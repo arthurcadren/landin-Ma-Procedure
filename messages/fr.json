@@ -15,8 +15,31 @@
   },
   "hero": {
     "badge": "L'administration simplifiée",
-    "title": "Réussissez vos démarches au Cameroun en un clic.",
-    "subtitle": "Accédez à des guides détaillés, parlez à nos experts certifiés et gagnez du temps sur vos dossiers administratifs et juridiques.",
+    "agentName": "Lexi",
+    "agentSubtitle": "Votre assistant administratif personnel sur WhatsApp",
+    "agentCta": "En savoir plus",
+    "rotating": [
+      {
+        "title": "Réussissez vos démarches au Cameroun en un clic.",
+        "subtitle": "Accédez à des guides détaillés, parlez à nos experts certifiés et gagnez du temps sur vos dossiers administratifs et juridiques."
+      },
+      {
+        "title": "Ne perdez plus de temps dans les files d'attente.",
+        "subtitle": "Toutes les procédures administratives camerounaises expliquées étape par étape, avec les documents exacts à préparer."
+      },
+      {
+        "title": "Un expert vérifié à portée de clic.",
+        "subtitle": "Posez vos questions à notre assistant IA 24/7, ou confiez votre dossier à un professionnel certifié via WhatsApp."
+      },
+      {
+        "title": "Vos démarches, suivies en temps réel.",
+        "subtitle": "Recevez un numéro de dossier et suivez chaque étape de votre procédure jusqu'à sa finalisation."
+      },
+      {
+        "title": "De la CNI au titre foncier, on connaît la marche à suivre.",
+        "subtitle": "Plus de 150 procédures administratives et semi-administratives documentées et régulièrement mises à jour."
+      }
+    ],
     "ctaPrimary": "Consulter une procédure",
     "ctaSecondary": "Discuter sur WhatsApp",
     "stat1Value": "150+",

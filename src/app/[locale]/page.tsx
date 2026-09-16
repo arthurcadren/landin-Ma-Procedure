@@ -4,7 +4,7 @@ import { getPopularProcedures, getFeaturedExperts, getPlatformStats } from "@/li
 import { ServicesJsonLd } from "@/components/seo/JsonLd";
 import Header from "@/components/home/Header";
 import Hero from "@/components/home/Hero";
-import HeroMarquees from "@/components/home/HeroMarquees";
+// import HeroMarquees from "@/components/home/HeroMarquees";
 import ServicesScroll from "@/components/home/ServicesScroll";
 import WhyUs from "@/components/home/WhyUs";
 import Features from "@/components/home/Features";
@@ -37,7 +37,7 @@ export default async function HomePage({
       <ServicesJsonLd items={serviceLinks} />
       <Header />
       <Hero stats={stats} />
-      <HeroMarquees />
+      {/* <HeroMarquees /> */}
       <ServicesScroll procedures={procedures} />
       <WhyUs stats={stats} />
       <Features />
