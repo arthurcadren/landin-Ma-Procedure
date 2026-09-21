@@ -1,6 +1,9 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Mail, MapPin, Phone } from "lucide-react";
+import logoFooter from "../../../logofooter.png";
+import Image from "next/image";
+
 
 export default function Footer() {
   const t = useTranslations("footer");
@@ -11,7 +14,14 @@ export default function Footer() {
       <div className="max-w-container mx-auto px-4 md:px-8">
         <div className="grid md:grid-cols-4 gap-10 mb-12">
           <div>
-            <p className="text-xl font-bold mb-3">Ma Procédure</p>
+            <p className="text-xl font-bold mb-3">
+              <Link href="/" className="hidden md:flex items-center" aria-label="Ma Procédure">
+                  <Image src={logoFooter} alt="Ma Procédure" width={250} height={80} priority className="h-20 w-auto" />
+              </Link>
+              <Link href="/" className="md:hidden flex items-center" aria-label="Ma Procédure">
+                  <Image src={logoFooter} alt="Ma Procédure" width={110} height={32} priority className="h-18 w-auto" />
+              </Link>
+            </p>
             <p className="text-sm opacity-80 leading-relaxed mb-4">{t("tagline")}</p>
             <div className="flex items-center gap-2 text-sm opacity-80">
               <MapPin size={14} />
