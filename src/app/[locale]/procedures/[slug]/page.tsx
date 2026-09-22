@@ -12,13 +12,14 @@ import { ProcedureCard } from "@/components/procedures/ProcedureCard";
 import Header from "@/components/home/Header";
 import Footer from "@/components/home/Footer";
 import WhatsAppFloat from "@/components/home/WhatsAppFloat";
+import { routing } from "@/i18n/routing";
 import { Wallet, Clock, Landmark, FileStack, Clock3 } from "lucide-react";
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const slugs = await getAllProcedureSlugs();
-  return slugs.map((slug) => ({ slug }));
+  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export async function generateMetadata({

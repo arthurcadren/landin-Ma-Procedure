@@ -114,7 +114,14 @@ export async function getProcedureBySlug(slug: string): Promise<ProcedureDetail 
   try {
     const res = await fetch(`${API_URL}/procedures/${slug}`, { next: { revalidate: 3600 } });
     if (!res.ok) return null;
-    return (await res.json()) as ProcedureDetail;
+    const data = await res.json();
+    const procedure = (data?.data ?? data) as ProcedureDetail;
+    return {
+      ...procedure,
+      steps: Array.isArray(procedure.steps) ? procedure.steps : [],
+      documents: Array.isArray(procedure.documents) ? procedure.documents : [],
+      faq: Array.isArray(procedure.faq) ? procedure.faq : [],
+    };
   } catch {
     return null;
   }
