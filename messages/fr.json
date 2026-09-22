@@ -339,5 +339,57 @@
     "privacyTitle": "Politique de Confidentialité",
     "termsTitle": "Conditions Générales d'Utilisation",
     "lastUpdated": "Dernière mise à jour : {date}"
-  }
+  },
+
+
+  
+"lexiDemo": {
+  "title": "Une question ? Demandez à Lexi.",
+  "subtitle": "Lexi comprend votre situation, répond instantanément et peut transmettre votre dossier à notre équipe si vous préférez déléguer.",
+  "msgClient1": "Bonjour Lexi, je veux créer mon entreprise. De quoi ai-je besoin ?",
+  "msgLexi1": "Voici les documents nécessaires : pièce d'identité, plan d'affaires, justificatif de siège social... [liste complète envoyée]",
+  "msgClient2": "Je préfère que Ma Procédure s'en occupe.",
+  "msgLexi2": "Très bien, je transmets votre dossier à notre équipe. Voici votre lien de paiement sécurisé 👇",
+  "cta": "Démarrer une conversation avec Lexi"
+},
+"delegationFlow": {
+  "title": "Vous préférez déléguer ?",
+  "subtitle": "Confiez votre démarche à notre équipe : nous nous occupons de tout, du dépôt à la remise finale.",
+  "step1": "Demande",
+  "step1Desc": "Vous décrivez votre besoin à Lexi sur WhatsApp",
+  "step2": "Devis",
+  "step2Desc": "Nous confirmons le prix exact avant tout paiement",
+  "step3": "Paiement",
+  "step3Desc": "Paiement sécurisé via Mobile Money ou Orange Money",
+  "step4": "Dossier pris en charge",
+  "step4Desc": "Un expert traite votre démarche de bout en bout",
+  "step5": "Suivi",
+  "step5Desc": "Vous suivez l'avancement directement sur WhatsApp",
+  "cta": "Confier ma démarche"
+},
+"whyPillars": {
+  "pillar1Title": "Information vérifiée",
+  "pillar1Desc": "Chaque procédure est documentée et validée avant publication",
+  "pillar2Title": "Simplicité",
+  "pillar2Desc": "Étapes, documents et coûts expliqués clairement",
+  "pillar3Title": "Suivi",
+  "pillar3Desc": "Un numéro de dossier pour suivre chaque étape",
+  "pillar4Title": "Accompagnement",
+  "pillar4Desc": "Un expert humain disponible si vous en avez besoin"
+},
+
+
+
+
+
+"heroMarquees": {
+  "trust1": "Contenus vérifiés par des experts",
+  "trust2": "Réponses instantanées 24/7",
+  "trust3": "Assistant disponible sur WhatsApp",
+  "trust4": "Suivi de dossier en temps réel",
+  "pay1": "MTN Mobile Money", "pay2": "Orange Money",
+  "pay3": "Paiement sécurisé Fapshi", "pay4": "Support WhatsApp 24/7"
+}
+
+
 }

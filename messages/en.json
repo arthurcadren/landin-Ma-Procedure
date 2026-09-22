@@ -335,5 +335,59 @@
     "privacyTitle": "Privacy Policy",
     "termsTitle": "Terms of Use",
     "lastUpdated": "Last updated: {date}"
-  }
+  },
+
+
+  
+"hero": {
+  "title": "Your administrative procedures, finally simple.",
+  "subtitle": "Find the procedure, understand the steps, and get support from Lexi, your assistant on WhatsApp.",
+  "ctaPrimary": "Search a procedure",
+  "ctaSecondary": "Talk to Lexi on WhatsApp",
+  "rotating": [
+    { "title": "Your administrative procedures, finally simple.", "subtitle": "Find the procedure, understand the steps, and get support from Lexi, your assistant on WhatsApp." },
+    { "title": "A question? Lexi answers in 2 minutes.", "subtitle": "Ask your question on WhatsApp and get the exact documents, costs and timelines for your procedure." },
+    { "title": "Prefer to delegate? We'll handle it.", "subtitle": "Hand your case to our team: quote, secure payment and tracking until your documents are delivered." }
+  ]
+},
+"lexiDemo": {
+  "title": "A question? Ask Lexi.",
+  "subtitle": "Lexi understands your situation, answers instantly, and can hand your case to our team if you'd rather delegate it.",
+  "msgClient1": "Hi Lexi, I want to register my business. What do I need?",
+  "msgLexi1": "Here are the required documents: ID card, business plan, proof of registered address... [full list sent]",
+  "msgClient2": "I'd rather have Ma Procédure handle it.",
+  "msgLexi2": "Sure, I'm forwarding your case to our team. Here's your secure payment link 👇",
+  "cta": "Start a conversation with Lexi"
+},
+"delegationFlow": {
+  "title": "Prefer to delegate?",
+  "subtitle": "Hand your procedure to our team: we handle everything, from filing to final delivery.",
+  "step1": "Request", "step1Desc": "You describe your need to Lexi on WhatsApp",
+  "step2": "Quote", "step2Desc": "We confirm the exact price before any payment",
+  "step3": "Payment", "step3Desc": "Secure payment via Mobile Money or Orange Money",
+  "step4": "Case handled", "step4Desc": "An expert processes your procedure end-to-end",
+  "step5": "Tracking", "step5Desc": "You follow progress directly on WhatsApp",
+  "cta": "Delegate my procedure"
+},
+"whyPillars": {
+  "pillar1Title": "Verified information", "pillar1Desc": "Every procedure is documented and validated before publishing",
+  "pillar2Title": "Simplicity", "pillar2Desc": "Steps, documents and costs clearly explained",
+  "pillar3Title": "Tracking", "pillar3Desc": "A case number to follow every step",
+  "pillar4Title": "Support", "pillar4Desc": "A human expert available whenever you need one"
+},
+
+
+
+
+
+"heroMarquees": {
+  "trust1": "Content verified by experts",
+  "trust2": "Instant answers, 24/7",
+  "trust3": "Assistant available on WhatsApp",
+  "trust4": "Real-time case tracking",
+  "pay1": "MTN Mobile Money", "pay2": "Orange Money",
+  "pay3": "Secure Fapshi payment", "pay4": "24/7 WhatsApp support"
+}
+
+
 }
