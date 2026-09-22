@@ -13,35 +13,19 @@
     "cta": "Chat on WhatsApp"
   },
   "hero": {
-    "badge": "Administration made simple",
-    "agentName": "Lexi",
-    "agentSubtitle": "Your personal administrative assistant on WhatsApp",
-    "agentCta": "Learn more",
-    "ctaPrimary": "Browse a procedure",
-    
+  "badge": "Simplified administration",
+  "title": "Your administrative procedures, finally simple.",
+  "subtitle": "Find the procedure, understand the steps, and get support from Lexi, your assistant on WhatsApp.",
+  "ctaPrimary": "Search a procedure",
+  "ctaSecondary": "Talk to Lexi on WhatsApp",
+  "agentName": "Lexi",
+  "agentCta": "Learn more",
+  "agentSubtitle":" Lexi is an intelligent assistant that guides you through your administrative procedures in Cameroon.",
   "rotating": [
-    {
-      "title": "Complete your procedures in Cameroon in one click.",
-      "subtitle": "Access detailed guides, talk to certified experts and save time on your administrative and legal paperwork."
-    },
-    {
-      "title": "Stop wasting time in long queues.",
-      "subtitle": "Every Cameroonian administrative procedure explained step by step, with the exact documents you need to prepare."
-    },
-    {
-      "title": "A verified expert just one click away.",
-      "subtitle": "Ask our AI assistant anything, 24/7, or hand your case over to a certified professional via WhatsApp."
-    },
-    {
-      "title": "Track your case in real time.",
-      "subtitle": "Get a case number and follow every step of your procedure until it's fully completed."
-    },
-    {
-      "title": "From ID cards to land titles, we know the way.",
-      "subtitle": "Over 150 administrative and semi-administrative procedures documented and regularly updated."
-    }
+    { "title": "Your administrative procedures, finally simple.", "subtitle": "Find the procedure, understand the steps, and get support from Lexi, your assistant on WhatsApp." },
+    { "title": "A question? Lexi answers in 2 minutes.", "subtitle": "Ask your question on WhatsApp and get the exact documents, costs and timelines for your procedure." },
+    { "title": "Prefer to delegate? We'll handle it.", "subtitle": "Hand your case to our team: quote, secure payment and tracking until your documents are delivered." }
   ],
-    "ctaSecondary": "Chat on WhatsApp",
     "stat1Value": "150+",
     "stat1Label": "Listed procedures",
     "stat2Value": "15k+",
@@ -50,7 +34,8 @@
     "stat3Label": "Expert support",
     "trustBadge": "Guaranteed reliability",
     "trustBadgeSub": "Certified content"
-  },
+},
+  
   "services": {
     "title": "All your procedures, in one place",
     "subtitle": "Over 150 documented procedures, regularly updated",
@@ -339,17 +324,7 @@
 
 
   
-"hero": {
-  "title": "Your administrative procedures, finally simple.",
-  "subtitle": "Find the procedure, understand the steps, and get support from Lexi, your assistant on WhatsApp.",
-  "ctaPrimary": "Search a procedure",
-  "ctaSecondary": "Talk to Lexi on WhatsApp",
-  "rotating": [
-    { "title": "Your administrative procedures, finally simple.", "subtitle": "Find the procedure, understand the steps, and get support from Lexi, your assistant on WhatsApp." },
-    { "title": "A question? Lexi answers in 2 minutes.", "subtitle": "Ask your question on WhatsApp and get the exact documents, costs and timelines for your procedure." },
-    { "title": "Prefer to delegate? We'll handle it.", "subtitle": "Hand your case to our team: quote, secure payment and tracking until your documents are delivered." }
-  ]
-},
+
 "lexiDemo": {
   "title": "A question? Ask Lexi.",
   "subtitle": "Lexi understands your situation, answers instantly, and can hand your case to our team if you'd rather delegate it.",
